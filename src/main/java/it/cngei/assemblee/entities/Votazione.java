@@ -32,8 +32,8 @@ public class Votazione {
 
   private Long idAssemblea;
   private TipoVotazione tipoVotazione;
-  private LocalDateTime orarioFine;
   private boolean terminata;
+  private Long numeroScelte;
 
   private String quesito;
 

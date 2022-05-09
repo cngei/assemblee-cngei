@@ -8,15 +8,17 @@ import it.cngei.assemblee.entities.Assemblea;
 import it.cngei.assemblee.repositories.DelegheRepository;
 import it.cngei.assemblee.repositories.VotazioneRepository;
 import it.cngei.assemblee.state.AssembleaState;
+import it.cngei.assemblee.state.VotazioneState;
+import it.cngei.assemblee.utils.Utils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/assemblea")
@@ -25,12 +27,14 @@ public class AssembleaController {
   private final VotazioneRepository votazioneRepository;
   private final DelegheRepository delegheRepository;
   private final AssembleaState assembleaState;
+  private final VotazioneState votazioneState;
 
-  public AssembleaController(AssembleeRepository assembleeRepository, VotazioneRepository votazioneRepository, DelegheRepository delegheRepository, AssembleaState assembleaState) {
+  public AssembleaController(AssembleeRepository assembleeRepository, VotazioneRepository votazioneRepository, DelegheRepository delegheRepository, AssembleaState assembleaState, VotazioneState votazioneState) {
     this.assembleeRepository = assembleeRepository;
     this.votazioneRepository = votazioneRepository;
     this.delegheRepository = delegheRepository;
     this.assembleaState = assembleaState;
+    this.votazioneState = votazioneState;
   }
 
   @ModelAttribute(name = "assembleaModel")
@@ -49,35 +53,32 @@ public class AssembleaController {
   }
 
   @GetMapping("/{id}")
-  public String getAssemblea(Model model, @PathVariable("id") Long id) {
+  public String getAssemblea(Model model, @PathVariable("id") Long id, Principal principal) {
     var assemblea = assembleeRepository.findById(id);
     var votazioni = votazioneRepository.findAllByIdAssemblea(id);
-    var idUtente = 1L;
+    var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
 
     if (assemblea.isEmpty()) {
       return "redirect:/";
     } else {
-      var temp = votazioni.stream().peek(x -> {
-        if(x.getOrarioFine() != null && x.getOrarioFine().isBefore(LocalDateTime.now())) {
-          x.setTerminata(true);
-        }
-      }).collect(Collectors.toList());
       model.addAllAttributes(Map.of(
           "assemblea", assemblea.get(),
-          "votazioni", temp,
+          "votazioni", votazioni,
           "presenti", assembleaState.getPresenti(id),
           "isPresente", assembleaState.getPresenti(id).contains(idUtente),
           "hasDelega", delegheRepository.findDelegaByDeleganteAndIdAssemblea(idUtente, id).isPresent() ,
-          "canStart", !assemblea.get().isInCorso() && assemblea.get().getIdProprietario() == idUtente,
-          "canStop", assemblea.get().isInCorso() && assemblea.get().getIdProprietario() == idUtente
+          "canStart", !assemblea.get().isInCorso() && assemblea.get().getIdProprietario().equals(idUtente),
+          "canStop", assemblea.get().isInCorso() && assemblea.get().getIdProprietario().equals(idUtente),
+          "votazioneState", votazioneState,
+          "tessera", idUtente
       ));
       return "assemblee/view";
     }
   }
 
   @GetMapping("/{id}/presenza")
-  public String togglePresenza(@PathVariable("id") Long id) {
-    var idUtente = 1L;
+  public String togglePresenza(@PathVariable("id") Long id, Principal principal) {
+    var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
     if(assembleaState.getPresenti(id).contains(idUtente)) {
       assembleaState.setAssente(id, idUtente);
     } else {
@@ -87,8 +88,8 @@ public class AssembleaController {
   }
 
   @GetMapping("/{id}/inizia")
-  public String startAssemblea(@PathVariable("id") Long id) {
-    var idUtente = 1L;
+  public String startAssemblea(@PathVariable("id") Long id, Principal principal) {
+    var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
     var maybeAssemblea = assembleeRepository.findById(id);
     if(maybeAssemblea.isEmpty()) {
       return "redirect:/";
@@ -102,8 +103,8 @@ public class AssembleaController {
   }
 
   @GetMapping("/{id}/termina")
-  public String stopAssemblea(@PathVariable("id") Long id) {
-    var idUtente = 1L;
+  public String stopAssemblea(@PathVariable("id") Long id, Principal principal) {
+    var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
     var maybeAssemblea = assembleeRepository.findById(id);
     if(maybeAssemblea.isEmpty()) {
       return "redirect:/";

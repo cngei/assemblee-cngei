@@ -18,16 +18,14 @@
             </div>
             <div class="form-control w-full max-w-md">
                 <label class="label">
-                    <span class="label-text">Data e ora di fine votazione</span>
+                    <span class="label-text">Max. scelte possibili</span>
                 </label>
                 <input
-                        type="datetime-local"
+                        type="number"
                         class="input input-bordered w-full"
-                        th:field="*{orarioFine}"
+                        required
+                        th:field="*{numeroScelte}"
                 ></input>
-                <label class="label">
-                    <span class="label-text text-gray-400 italic text-xs">Se non indicato, la votazione sar&agrave; interrotta manualmente</span>
-                </label>
             </div>
             <div class="form-control w-full max-w-md">
                 <label class="label">

@@ -37,10 +37,16 @@
                     <p th:if="${votazione.isTerminata()}">Votazione terminata</p>
                     <p th:if="${!votazione.isTerminata()}">Votazione aperta</p>
                     <div class="card-actions justify-end">
-                        <a th:if="${isPresente}" th:href="@{/assemblea/{id}/votazione/{idVotazione}(id=${assemblea.getId()},idVotazione=${votazione.getId()})}">
-                            <button class="btn btn-primary">Entra</button>
+                        <a th:if="${!votazione.isTerminata() && isPresente && !votazioneState.getVotanti(votazione.getId()).contains(tessera)}" th:href="@{/assemblea/{id}/votazione/{idVotazione}(id=${assemblea.getId()},idVotazione=${votazione.getId()})}">
+                            <button class="btn btn-primary">Vota</button>
                         </a>
-                        <button th:if="${!isPresente}" class="btn btn-disabled">Devi essere presente in proprio per votare</button>
+                        <a th:if="${votazione.isTerminata() || (isPresente && votazioneState.getVotanti(votazione.getId()).contains(tessera))}" th:href="@{/assemblea/{id}/votazione/{idVotazione}/risultati(id=${assemblea.getId()},idVotazione=${votazione.getId()})}">
+                            <button class="btn">Risultati</button>
+                        </a>
+                        <button th:if="${!isPresente && !votazione.isTerminata()}" class="btn btn-disabled">Devi essere presente in proprio per votare</button>
+                        <a th:if="${canStop && !votazione.isTerminata()}" th:href="@{/assemblea/{id}/votazione/{idVotazione}/termina(id=${assemblea.getId()},idVotazione=${votazione.getId()})}">
+                            <button class="btn btn-primary">Termina votazione</button>
+                        </a>
                     </div>
                 </div>
             </div>

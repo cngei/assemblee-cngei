@@ -8,6 +8,6 @@ import java.time.LocalDateTime;
 public class VotazioneEditModel {
   private String quesito;
   private String scelte;
+  private Long numeroScelte;
   private boolean votoPalese;
-  private String orarioFine;
 }

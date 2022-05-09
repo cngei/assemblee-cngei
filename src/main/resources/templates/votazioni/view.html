@@ -1,9 +1,55 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base.html}">
+<head>
+    <script type="application/javascript">
+        window.onload = function () {
+            const form = document.querySelector("form");
+            const maxScelte = form.getAttribute('data-max-selected');
+            for(_input of document.querySelectorAll("input[data-delega='false']")) {
+                _input.onchange = function (e) {
+                    if(e.target.checked) {
+                        form.setAttribute('data-selected-proprio', Number.parseInt(form.getAttribute('data-selected-proprio'), 10) + 1);
+                        console.log(form.attributes)
+                        if(form.getAttribute('data-selected-proprio') >= maxScelte) {
+                            for(tmp of document.querySelectorAll("input[data-delega='false']")) {
+                                if(!tmp.checked) tmp.disabled = true;
+                            }
+                        }
+                    } else {
+                        form.setAttribute('data-selected-proprio', Number.parseInt(form.getAttribute('data-selected-proprio'), 10) - 1);
+                        console.log(form.attributes)
+                        for(tmp of document.querySelectorAll("input[data-delega='false']")) {
+                            if(tmp.disabled) tmp.disabled = false;
+                        }
+                    }
+                }
+            }
+            for(_input of document.querySelectorAll("input[data-delega='true']")) {
+                _input.onchange = function (e) {
+                    if(e.target.checked) {
+                        form.setAttribute('data-selected-delega', Number.parseInt(form.getAttribute('data-selected-delega'), 10) + 1);
+                        console.log(form.attributes)
+                        if(form.getAttribute('data-selected-delega') >= maxScelte) {
+                            for(tmp of document.querySelectorAll("input[data-delega='true']")) {
+                                if(!tmp.checked) tmp.disabled = true;
+                            }
+                        }
+                    } else {
+                        form.setAttribute('data-selected-delega', Number.parseInt(form.getAttribute('data-selected-delega'), 10) - 1);
+                        console.log(form.attributes)
+                        for(tmp of document.querySelectorAll("input[data-delega='true']")) {
+                            if(tmp.disabled) tmp.disabled = false;
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
 <th:block th:include="fragments/base.html :: page">
     <div layout:fragment="content">
         <h2 class="text-xl" th:text="${votazione.getQuesito()}"></h2>
-        <form th:object="${votoModel}" method="post">
+        <form th:object="${votoModel}" method="post" data-selected-proprio="0" data-selected-delega="0" th:data-max-selected="${votazione.getNumeroScelte()}">
             <table class="table w-full mt-2">
                 <thead>
                 <tr>
@@ -16,17 +62,18 @@
                 <tr th:each="scelta, iStat : ${votazione.getScelte()}">
                     <td>
                         <span class="label-text"
-
                               th:text="${scelta}"></span>
                     </td>
                     <td>
                         <input th:name="|inProprio[${iStat.index}]|"
                                th:value="${scelta}"
+                               data-delega="false"
                                type="checkbox" class="checkbox"/>
                     </td>
                     <td th:if="${hasDelega}">
                         <input th:name="|perDelega[${iStat.index}]|"
                                th:value="${scelta}"
+                               data-delega="true"
                                type="checkbox" class="checkbox"/>
                     </td>
                 </tr>
