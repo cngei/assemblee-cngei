@@ -1,0 +1,33 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base.html}">
+<th:block th:include="fragments/base.html :: page">
+    <div layout:fragment="content">
+        <h2 class="text-xl" th:text="${assemblea.getNome()}"></h2>
+        <div th:if="${delegaExists != -1}">
+            <p>Hai delegato
+                <th:block th:text="${delegaExists}"></th:block>
+            </p>
+            <a th:href="@{/assemblea/{id}/delega/annulla(id=${assemblea.getId()})}">
+                <button class="btn btn-error">Elimina delega</button>
+            </a>
+            <a th:href="@{/assemblea/{id}(id=${assemblea.getId()})}">
+                <button class="btn btn-outline">Torna all'assemblea</button>
+            </a>
+        </div>
+        <form th:if="${delegaExists == -1}" th:object="${delega}" method="post">
+            <select class="select w-full max-w-sm input-bordered my-2" th:field="*{tessera}" required>
+                <option disabled selected th:value="null">Seleziona chi vuoi delegare</option>
+                <option
+                        th:each="partecipante : ${assemblea.getPartecipanti()}"
+                        th:value="${partecipante}"
+                        th:text="${partecipante}">
+                </option>
+            </select>
+            <button class="btn btn-primary">Crea delega</button>
+            <a th:href="@{/assemblea/{id}(id=${assemblea.getId()})}">
+                <button class="btn btn-outline">Annulla</button>
+            </a>
+        </form>
+    </div>
+</th:block>
+</html>

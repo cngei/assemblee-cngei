@@ -1,0 +1,70 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base.html}">
+<th:block th:include="fragments/base.html :: page">
+    <div layout:fragment="content">
+        <h2 class="text-xl">Nuova assemblea</h2>
+        <form th:object="${assembleaModel}" method="post">
+            <div class="form-control w-full max-w-md">
+                <label class="label">
+                    <span class="label-text">Titolo assemblea</span>
+                </label>
+                <input
+                        type="text"
+                        placeholder="e.g.: ASez Brescia 29 febbraio"
+                        class="input input-bordered w-full"
+                        required
+                        oninvalid="this.setCustomValidity('Il nome dell\'assemblea è obbligatorio')"
+                        oninput="this.setCustomValidity('')"
+                        th:field="*{nome}"
+                ></input>
+            </div>
+            <div class="form-control w-full max-w-md">
+                <label class="label">
+                    <span class="label-text">Data e ora</span>
+                </label>
+                <input
+                        type="datetime-local"
+                        class="input input-bordered w-full"
+                        oninvalid="this.setCustomValidity('Data e ora sono obbligatorie')"
+                        oninput="this.setCustomValidity('')"
+                        th:field="*{dateTime}"
+                ></input>
+            </div>
+            <div class="form-control w-full max-w-md">
+                <label class="label">
+                    <span class="label-text">Descrizione</span>
+                </label>
+                <textarea
+                        placeholder="Descrizione opzionale"
+                        class="textarea textarea-bordered"
+                        th:field="*{descrizione}"
+                ></textarea>
+            </div>
+            <div class="form-control w-full max-w-md">
+                <label class="label">
+                    <span class="label-text">Ordine del giorno</span>
+                </label>
+                <textarea
+                        placeholder="Un punto all'o.d.g. per riga"
+                        class="textarea textarea-bordered"
+                        th:field="*{odg}"
+                ></textarea>
+            </div>
+            <div class="form-control w-full max-w-md">
+                <label class="label">
+                    <span class="label-text">Elenco partecipanti</span>
+                </label>
+                <textarea
+                        placeholder="Un numero di tessera per riga"
+                        class="textarea textarea-bordered"
+                        th:field="*{partecipanti}"
+                        pattern="\d*"
+                        required
+                ></textarea>
+            </div>
+            <button class="btn btn-primary mt-2">Crea</button>
+            <a href="/"><button class="btn btn-outline" type="button">Annulla</button></a>
+        </form>
+    </div>
+</th:block>
+</html>

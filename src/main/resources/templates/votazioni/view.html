@@ -1,0 +1,46 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base.html}">
+<th:block th:include="fragments/base.html :: page">
+    <div layout:fragment="content">
+        <h2 class="text-xl" th:text="${votazione.getQuesito()}"></h2>
+        <form th:object="${votoModel}" method="post">
+            <table class="table w-full mt-2">
+                <thead>
+                <tr>
+                    <th>Opzione</th>
+                    <th>In proprio</th>
+                    <th th:if="${hasDelega}">Per delega</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="scelta, iStat : ${votazione.getScelte()}">
+                    <td>
+                        <span class="label-text"
+
+                              th:text="${scelta}"></span>
+                    </td>
+                    <td>
+                        <input th:name="|inProprio[${iStat.index}]|"
+                               th:value="${scelta}"
+                               type="checkbox" class="checkbox"/>
+                    </td>
+                    <td th:if="${hasDelega}">
+                        <input th:name="|perDelega[${iStat.index}]|"
+                               th:value="${scelta}"
+                               type="checkbox" class="checkbox"/>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <div class="max-w-md">
+            </div>
+            <button class="btn btn-primary">Invia voto</button>
+        </form>
+        <div class="mt-4">
+            <a th:href="${'/assemblea/' + assemblea.getId()}">
+                <button class="btn btn-outline">Torna all'assemblea</button>
+            </a>
+        </div>
+    </div>
+</th:block>
+</html>

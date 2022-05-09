@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="page">
+<head th:fragment="head">
+    <title>CNGEI Assemblee</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@2.14.3/dist/full.css" rel="stylesheet" type="text/css"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+<div class="navbar bg-green-800" th:fragment="nav">
+    <div class="flex-1">
+        <a class="btn btn-ghost normal-case text-xl text-white" href="/">CNGEI - Assemblee</a>
+    </div>
+    <div class="flex-none">
+        <a href="/logout">
+            <button class="btn btn-ghost text-white">Logout</button>
+        </a>
+        <div class="avatar">
+            <div class="h-12 rounded-full">
+                <img src="https://cngei.it/wp-content/themes/cngei/images/logo.svg"/>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="py-2 px-6" th:fragment="container">
+    <div layout:fragment="content"></div>
+</div>
+</body>
+</th:block>
+</html>

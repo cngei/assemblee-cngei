@@ -1,0 +1,22 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base.html}">
+<th:block th:include="fragments/base.html :: page">
+    <div layout:fragment="content">
+        <h2 class="text-xl">Nomina presidente</h2>
+        <form th:object="${presidenteModel}" method="post">
+            <select class="select w-full max-w-sm input-bordered my-2" th:field="*{tessera}" required>
+                <option disabled selected th:value="null">Seleziona il presidente dell'assemblea</option>
+                <option
+                        th:each="partecipante : ${assemblea.getPartecipanti()}"
+                        th:value="${partecipante}"
+                        th:text="${partecipante}">
+                </option>
+            </select>
+            <button class="btn btn-primary">Nomina</button>
+            <a th:href="@{/assemblea/{id}(id=${assemblea.getId()})}">
+                <button class="btn btn-outline">Annulla</button>
+            </a>
+        </form>
+    </div>
+</th:block>
+</html>

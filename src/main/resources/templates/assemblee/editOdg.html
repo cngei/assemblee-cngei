@@ -1,0 +1,21 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base.html}">
+<th:block th:include="fragments/base.html :: page">
+    <div layout:fragment="content">
+        <h2 class="text-xl">Modifica OdG</h2>
+        <form th:object="${odgModel}" method="post">
+            <div class="form-control w-full max-w-md">
+                <textarea
+                        placeholder="Un punto all'o.d.g. per riga"
+                        class="textarea textarea-bordered"
+                        th:field="*{odg}"
+                        th:value="*{odg}"
+                        rows="10"
+                ></textarea>
+            </div>
+            <button class="btn btn-primary mt-2">Salva</button>
+            <a href="/"><button class="btn btn-outline" type="button">Annulla</button></a>
+        </form>
+    </div>
+</th:block>
+</html>

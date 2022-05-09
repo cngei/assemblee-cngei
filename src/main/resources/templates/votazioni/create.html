@@ -1,0 +1,54 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base.html}">
+<th:block th:include="fragments/base.html :: page">
+    <div layout:fragment="content">
+        <h2 class="text-xl">Nuova votazione</h2>
+        <form th:object="${votazioneModel}" method="post">
+            <div class="form-control w-full max-w-md">
+                <label class="label">
+                    <span class="label-text">Quesito in votazione</span>
+                </label>
+                <input
+                        type="text"
+                        placeholder="e.g.: Elezione Presidente Galattico"
+                        class="input input-bordered w-full"
+                        required
+                        th:field="*{quesito}"
+                ></input>
+            </div>
+            <div class="form-control w-full max-w-md">
+                <label class="label">
+                    <span class="label-text">Data e ora di fine votazione</span>
+                </label>
+                <input
+                        type="datetime-local"
+                        class="input input-bordered w-full"
+                        th:field="*{orarioFine}"
+                ></input>
+                <label class="label">
+                    <span class="label-text text-gray-400 italic text-xs">Se non indicato, la votazione sar&agrave; interrotta manualmente</span>
+                </label>
+            </div>
+            <div class="form-control w-full max-w-md">
+                <label class="label">
+                    <span class="label-text">Elenco opzioni</span>
+                </label>
+                <textarea
+                        placeholder="Un'opzione per riga"
+                        class="textarea textarea-bordered"
+                        th:field="*{scelte}"
+                        required
+                ></textarea>
+            </div>
+            <div class="form-control max-w-md">
+                <label class="label cursor-pointer">
+                    <span class="label-text">Voto palese</span>
+                    <input type="checkbox" th:checked="*{votoPalese}" class="checkbox" />
+                </label>
+            </div>
+            <button class="btn btn-primary mt-2">Crea</button>
+            <a th:href="${'/assemblea/' + assemblea.getId()}"><button class="btn btn-outline" type="button">Annulla</button></a>
+        </form>
+    </div>
+</th:block>
+</html>
