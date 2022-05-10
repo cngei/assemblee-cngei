@@ -147,6 +147,7 @@ public class VotazioniController {
         .quesito(votazioneModel.getQuesito())
         .tipoVotazione(votazioneModel.isVotoPalese() ? TipoVotazione.PALESE : TipoVotazione.SEGRETO)
         .scelte(scelte.toArray(String[]::new))
+        .numeroScelte(votazioneModel.getNumeroScelte())
         .terminata(false)
         .build();
     votazioneRepository.save(newVotazione);

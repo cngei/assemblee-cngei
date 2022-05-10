@@ -4,7 +4,6 @@ import it.cngei.assemblee.repositories.AssembleeRepository;
 import it.cngei.assemblee.utils.Utils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 

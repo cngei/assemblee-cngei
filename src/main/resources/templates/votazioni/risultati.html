@@ -27,7 +27,35 @@
             </tr>
             </tbody>
         </table>
-        <div class="max-w-md">
+        <div class="mt-2 w-full">
+            <div tabindex="0" class="collapse collapse-arrow border rounded-box">
+                <input type="checkbox" />
+                <div class="collapse-title text-xl font-medium">
+                    Elenco voti
+                </div>
+                <div class="collapse-content">
+                    <table class="table w-full mt-2">
+                        <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Scelte</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="voto, iStat : ${voti}">
+                            <td>
+                                <span class="label-text" th:text="${voto.getId()}"></span>
+                            </td>
+                            <td>
+                                <th:block th:each="scelta : ${voto.getScelte()}">
+                                   <span th:text="${votazione.getScelte()[scelta]}"></span>
+                                </th:block>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
         <div class="mt-4">
             <a th:href="${'/assemblea/' + idAssemblea}">

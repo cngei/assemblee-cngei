@@ -78,11 +78,14 @@ public class AssembleaController {
 
   @GetMapping("/{id}/presenza")
   public String togglePresenza(@PathVariable("id") Long id, Principal principal) {
-    var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
-    if(assembleaState.getPresenti(id).contains(idUtente)) {
-      assembleaState.setAssente(id, idUtente);
+    var me = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
+    var delega = delegheRepository.findDelegaByDelegatoAndIdAssemblea(me, id);
+    if(assembleaState.getPresenti(id).contains(me)) {
+      assembleaState.setAssente(id, me);
+      delega.ifPresent(value -> assembleaState.setAssente(id, value.getDelegante()));
     } else {
-      assembleaState.setPresente(id, idUtente);
+      assembleaState.setPresente(id, me);
+      delega.ifPresent(value -> assembleaState.setPresente(id, value.getDelegante()));
     }
     return "redirect:/assemblea/" + id;
   }
