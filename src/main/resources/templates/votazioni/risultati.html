@@ -25,11 +25,20 @@
                 <td th:text="${perDelega[iStat.index]}">
                 </td>
             </tr>
+            <tr th:if="${votazione.getPresenti() != null}">
+                <td>
+                    <span class="label-text">Presenti</span>
+                </td>
+                <td>
+                    <strong th:text="${votazione.getPresenti()}"></strong>
+                </td>
+                <td colspan="2">
+                </td>
+            </tr>
             </tbody>
         </table>
         <div class="mt-2 w-full">
             <div tabindex="0" class="collapse collapse-arrow border rounded-box">
-                <input type="checkbox" />
                 <div class="collapse-title text-xl font-medium">
                     Elenco voti
                 </div>

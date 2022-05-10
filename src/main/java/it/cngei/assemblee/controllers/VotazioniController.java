@@ -1,12 +1,12 @@
 package it.cngei.assemblee.controllers;
 
 import it.cngei.assemblee.dtos.VotazioneEditModel;
-import it.cngei.assemblee.dtos.VotoEditModel;
 import it.cngei.assemblee.entities.Votazione;
 import it.cngei.assemblee.enums.TipoVotazione;
 import it.cngei.assemblee.repositories.AssembleeRepository;
 import it.cngei.assemblee.repositories.VotazioneRepository;
 import it.cngei.assemblee.repositories.VotiRepository;
+import it.cngei.assemblee.state.AssembleaState;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -22,11 +22,13 @@ public class VotazioniController {
   private final AssembleeRepository assembleeRepository;
   private final VotazioneRepository votazioneRepository;
   private final VotiRepository votiRepository;
+  private final AssembleaState assembleaState;
 
-  public VotazioniController(AssembleeRepository assembleeRepository, VotazioneRepository votazioneRepository, VotiRepository votiRepository) {
+  public VotazioniController(AssembleeRepository assembleeRepository, VotazioneRepository votazioneRepository, VotiRepository votiRepository, AssembleaState assembleaState) {
     this.assembleeRepository = assembleeRepository;
     this.votazioneRepository = votazioneRepository;
     this.votiRepository = votiRepository;
+    this.assembleaState = assembleaState;
   }
 
   @ModelAttribute(name = "votazioneModel")
@@ -53,8 +55,7 @@ public class VotazioniController {
       return "redirect:/";
     }
     var scelte = Arrays.stream(votazioneModel.getScelte().split("\n")).map(String::trim).filter(x -> !x.isBlank()).collect(Collectors.toList());
-    scelte.add("Scheda bianca");
-    scelte.add("Scheda nulla");
+    scelte.add("Astenuto");
     var newVotazione = Votazione.builder()
         .idAssemblea(assemblea.get().getId())
         .quesito(votazioneModel.getQuesito())
@@ -77,6 +78,7 @@ public class VotazioniController {
     var votazione = votazioneRepository.findById(idVotazione);
     var temp = votazione.get(); // TODO: rimuovere questo schifo
     temp.setTerminata(true);
+    temp.setPresenti((long) assembleaState.getPresenti(id).size());
     votazioneRepository.save(temp);
 
     return "redirect:/assemblea/" + id + "/votazione/" + idVotazione + "/risultati";

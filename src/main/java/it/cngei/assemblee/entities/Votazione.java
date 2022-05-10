@@ -34,6 +34,7 @@ public class Votazione {
   private TipoVotazione tipoVotazione;
   private boolean terminata;
   private Long numeroScelte;
+  private Long presenti;
 
   private String quesito;
 
