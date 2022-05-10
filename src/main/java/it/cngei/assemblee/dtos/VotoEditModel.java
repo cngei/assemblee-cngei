@@ -8,4 +8,6 @@ import java.util.ArrayList;
 public class VotoEditModel {
   private ArrayList<String> inProprio;
   private ArrayList<String> perDelega;
+  private String idProprio;
+  private String idDelega;
 }

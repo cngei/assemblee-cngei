@@ -5,10 +5,8 @@ import it.cngei.assemblee.dtos.VotoEditModel;
 import it.cngei.assemblee.entities.Votazione;
 import it.cngei.assemblee.enums.TipoVotazione;
 import it.cngei.assemblee.repositories.AssembleeRepository;
-import it.cngei.assemblee.repositories.DelegheRepository;
 import it.cngei.assemblee.repositories.VotazioneRepository;
 import it.cngei.assemblee.repositories.VotiRepository;
-import it.cngei.assemblee.state.VotazioneState;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -34,11 +32,6 @@ public class VotazioniController {
   @ModelAttribute(name = "votazioneModel")
   public VotazioneEditModel votazioneModel() {
     return new VotazioneEditModel();
-  }
-
-  @ModelAttribute(name = "votoModel")
-  public VotoEditModel votoModel() {
-    return new VotoEditModel();
   }
 
   @GetMapping("/crea")
@@ -93,7 +86,9 @@ public class VotazioniController {
   public String getVotazioneView(Model model, @PathVariable("id") Long id, @PathVariable("idVotazione") Long idVotazione) {
     var assemblea = assembleeRepository.findById(id);
     var votazione = votazioneRepository.findById(idVotazione);
-    var voti = votiRepository.findAllByIdVotazione(idVotazione);
+    var voti = votiRepository.findAllByIdVotazione(idVotazione).stream()
+        .peek(x -> x.setId(x.getId().split("-")[0])).collect(Collectors.toList());
+
     var inProprio = IntStream.range(0, votazione.get().getScelte().length)
             .mapToLong(i -> voti.stream().filter(x -> !x.isPerDelega() && Arrays.stream(x.getScelte()).anyMatch(y -> y == i)).count()).toArray();
     var perDelega = IntStream.range(0, votazione.get().getScelte().length)

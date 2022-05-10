@@ -1,6 +1,7 @@
 package it.cngei.assemblee.controllers;
 
 import it.cngei.assemblee.dtos.VotoEditModel;
+import it.cngei.assemblee.entities.Delega;
 import it.cngei.assemblee.entities.Voto;
 import it.cngei.assemblee.enums.TipoVotazione;
 import it.cngei.assemblee.repositories.AssembleeRepository;
@@ -12,10 +13,7 @@ import it.cngei.assemblee.utils.Utils;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.*;
@@ -37,17 +35,28 @@ public class VotiController {
     this.votazioneState = votazioneState;
   }
 
+  @ModelAttribute(name = "votoModel")
+  public VotoEditModel votoModel() {
+    return new VotoEditModel();
+  }
+
   @GetMapping("/{idVotazione}")
   public String getVotazioneView(
       Model model,
       @PathVariable("id") Long id,
       @PathVariable("idVotazione") Long idVotazione,
-      Principal principal
+      Principal principal,
+      VotoEditModel votoModel
   ) {
     var me = Utils.getKeycloakUserFromPrincipal(principal);
     var assemblea = assembleeRepository.findById(id);
     var votazione = votazioneRepository.findById(idVotazione);
     var delega = delegheRepository.findDelegaByDelegatoAndIdAssemblea(Long.valueOf(me.getPreferredUsername()), id);
+    var idProprio = votazione.get().getTipoVotazione() == TipoVotazione.PALESE ? me.getPreferredUsername() : UUID.randomUUID().toString();
+    var idDelega = votazione.get().getTipoVotazione() == TipoVotazione.PALESE ? String.valueOf(delega.map(Delega::getDelegante).orElse(-1L)) : UUID.randomUUID().toString();
+
+    votoModel.setIdProprio(idProprio);
+    votoModel.setIdDelega(idDelega);
 
     if (assemblea.isEmpty()) {
       throw new NoSuchElementException();
@@ -57,7 +66,11 @@ public class VotiController {
       model.addAllAttributes(Map.of(
           "assemblea", assemblea.get(),
           "votazione", votazione.get(),
-          "hasDelega", delega.isPresent()));
+          "hasDelega", delega.isPresent(),
+          "idProprio", idProprio,
+          "idDelega", delega.isPresent() ? idDelega : -1L,
+          "votoModel", votoModel
+      ));
       return "votazioni/view";
     }
   }
@@ -74,10 +87,10 @@ public class VotiController {
     var votazione = votazioneRepository.findById(idVotazione);
     var delega = delegheRepository.findDelegaByDelegatoAndIdAssemblea(Long.valueOf(me.getPreferredUsername()), id);
 
-    if(votazioneState.getVotanti(idVotazione).contains(Long.valueOf(me.getPreferredUsername()))) {
+    if (votazioneState.getVotanti(idVotazione).contains(Long.valueOf(me.getPreferredUsername()))) {
       throw new AccessDeniedException("Hai già votato");
     }
-    if(votazione.get().isTerminata()) {
+    if (votazione.get().isTerminata()) {
       throw new AccessDeniedException("Votazione conclusa");
     }
 
@@ -87,16 +100,16 @@ public class VotiController {
       return "redirect:/assemblee/" + id;
     } else {
       var inProprio = Voto.builder()
-          .id(votazione.get().getTipoVotazione() == TipoVotazione.PALESE ? me.getPreferredUsername() : UUID.randomUUID().toString())
+          .id(votoModel.getIdProprio())
           .idVotazione(idVotazione)
           .scelte(parseScelte(votoModel.getInProprio(), votazione.get().getScelte()))
           .build();
       votiRepository.save(inProprio);
       votazioneState.setVotante(idVotazione, Long.valueOf(me.getPreferredUsername()));
 
-      if(delega.isPresent()) {
+      if (delega.isPresent()) {
         var perDelega = Voto.builder()
-            .id(votazione.get().getTipoVotazione() == TipoVotazione.PALESE ? String.valueOf(delega.get().getDelegante()) : UUID.randomUUID().toString())
+            .id(votoModel.getIdDelega())
             .idVotazione(idVotazione)
             .scelte(parseScelte(votoModel.getPerDelega(), votazione.get().getScelte()))
             .perDelega(true)

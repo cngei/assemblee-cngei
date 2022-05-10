@@ -84,13 +84,15 @@ public class AssembleaController {
   }
 
   @PostMapping("/crea")
-  public String createAssemblea(AssembleaEditModel assembleaModel) {
+  public String createAssemblea(AssembleaEditModel assembleaModel, Principal principal) {
+    var me = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
     var newAssemblea = Assemblea.builder()
-        .idProprietario(1L)
+        .idProprietario(me)
         .nome(assembleaModel.getNome())
         .descrizione(assembleaModel.getDescrizione())
         .partecipanti(parsePartecipanti(assembleaModel.getPartecipanti()))
         .convocazione(LocalDateTime.parse(assembleaModel.getDateTime()))
+        .stepOdg(0L)
         .odg(Arrays.stream(assembleaModel.getOdg().split("\n")).filter(x -> !x.isBlank()).toArray(String[]::new))
         .build();
 
