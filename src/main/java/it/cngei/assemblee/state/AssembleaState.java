@@ -35,7 +35,9 @@ public class AssembleaState {
     }
 
     presenti.get(idAssemblea).remove(idPartecipante);
-    keys2fa.get(idAssemblea).remove(idPartecipante);
+    if(keys2fa.containsKey(idAssemblea)) {
+      keys2fa.get(idAssemblea).remove(idPartecipante);
+    }
     if(presenti.get(idAssemblea).isEmpty()) {
       presenti.remove(idAssemblea);
       keys2fa.remove(idAssemblea);

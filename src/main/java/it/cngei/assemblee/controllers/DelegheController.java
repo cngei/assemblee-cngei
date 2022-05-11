@@ -2,8 +2,10 @@ package it.cngei.assemblee.controllers;
 
 import it.cngei.assemblee.dtos.DelegaEditModel;
 import it.cngei.assemblee.entities.Delega;
+import it.cngei.assemblee.entities.Socio;
 import it.cngei.assemblee.repositories.AssembleeRepository;
 import it.cngei.assemblee.repositories.DelegheRepository;
+import it.cngei.assemblee.repositories.SocioRepository;
 import it.cngei.assemblee.state.AssembleaState;
 import it.cngei.assemblee.utils.Utils;
 import org.springframework.stereotype.Controller;
@@ -12,17 +14,21 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/assemblea/{id}/delega")
 public class DelegheController {
   private final AssembleeRepository assembleeRepository;
   private final DelegheRepository delegheRepository;
+  private final SocioRepository socioRepository;
   private final AssembleaState assembleaState;
 
-  public DelegheController(AssembleeRepository assembleeRepository, DelegheRepository delegheRepository, AssembleaState assembleaState) {
+  public DelegheController(AssembleeRepository assembleeRepository, DelegheRepository delegheRepository, SocioRepository socioRepository, AssembleaState assembleaState) {
     this.assembleeRepository = assembleeRepository;
     this.delegheRepository = delegheRepository;
+    this.socioRepository = socioRepository;
     this.assembleaState = assembleaState;
   }
 
@@ -36,14 +42,19 @@ public class DelegheController {
     var me = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
     var assemblea = assembleeRepository.findById(id);
     var existingDelega = delegheRepository.findDelegaByDeleganteAndIdAssemblea(me, id);
+    var allDeleghe = delegheRepository.findAllByIdAssemblea(id);
+    var currentDeleghe = allDeleghe.stream().map(Delega::getDelegato).collect(Collectors.toSet());
+    currentDeleghe.addAll(allDeleghe.stream().map(Delega::getDelegante).collect(Collectors.toSet()));
 
     if (assemblea.isEmpty()) {
       return "redirect:/";
     } else {
       var temp = assemblea.get();
-      temp.setPartecipanti(Arrays.stream(temp.getPartecipanti()).filter(x -> x != me).toArray(Long[]::new));
+      temp.setPartecipanti(Arrays.stream(temp.getPartecipanti()).filter(x -> x != me && !currentDeleghe.contains(x)).toArray(Long[]::new));
+      var partecipanti = Arrays.stream(temp.getPartecipanti()).map(x -> Map.entry(x, socioRepository.findById(x).map(Socio::getNome).orElse(x.toString()))).sorted(Map.Entry.comparingByValue()).collect(Collectors.toList());
       model.addAttribute("assemblea", temp);
-      model.addAttribute("delegaExists", existingDelega.map(Delega::getDelegato).orElse(-1L));
+      model.addAttribute("partecipanti", partecipanti);
+      model.addAttribute("delegaExists", existingDelega.flatMap(x -> socioRepository.findById(x.getDelegato())).map(Socio::getNome).orElse(""));
       return "deleghe/create";
     }
   }

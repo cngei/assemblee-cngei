@@ -1,6 +1,6 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base.html}">
-<th:block th:include="fragments/base.html :: page">
+<p th:include="fragments/base.html :: page">
     <div layout:fragment="content">
         <div class="grid grid-flow-column gap-4 grid-cols-1 lg:grid-cols-2">
             <h2 class="text-xl" th:text="${assemblea.getNome()}"></h2>
@@ -23,7 +23,7 @@
             </div>
         </div>
         <a th:href="@{/assemblea/{id}/inizia(id=${assemblea.getId()})}">
-            <button class="btn btn-success" th:if="${canStart}">Inizia assemblea</button>
+            <button class="btn btn-success" th:if="${isProprietario && !assemblea.isInCorso() && assemblea.getFine() == null}">Inizia assemblea</button>
         </a>
         <div th:if="${assemblea.getIdPresidente() == null && isProprietario}" class="flex mt-2 items-center justify-between">
             <p>Non è ancora stato nominato il presidente dell'assemblea</p>
@@ -42,7 +42,7 @@
                            th:href="@{/assemblea/{id}/votazione/{idVotazione}(id=${assemblea.getId()},idVotazione=${votazione.getId()})}">
                             <button class="btn btn-primary">Vota</button>
                         </a>
-                        <a th:if="${votazione.isTerminata() || (votazione.getTipoVotazione() == 0 && votazioneState.getVotanti(votazione.getId()).contains(tessera))}"
+                        <a th:if="${votazione.isTerminata() || (votazione.getTipoVotazione().toString().equals('PALESE') && votazioneState.getVotanti(votazione.getId()).contains(tessera))}"
                            th:href="@{/assemblea/{id}/votazione/{idVotazione}/risultati(id=${assemblea.getId()},idVotazione=${votazione.getId()})}">
                             <button class="btn">Risultati</button>
                         </a>
@@ -65,7 +65,7 @@
                 th:each="punto, iStat : ${assemblea.getOdg()}">
                 <div class="flex justify-between items-center w-full text-left">
                     <span th:text="${punto}"></span>
-                    <th:block th:if="${assemblea.isInCorso() && iStat.index == assemblea.getStepOdg()}">
+                    <th:block th:if="${isProprietario && assemblea.isInCorso() && iStat.index == assemblea.getStepOdg()}">
                         <a th:href="@{/assemblea/{id}/votazione/crea(id=${assemblea.getId()})}">
                             <button class="btn btn-success btn-sm">Crea votazione</button>
                         </a>
@@ -83,11 +83,11 @@
             </div>
         </th:block>
         <div class="grid grid-flow-col-dense max-w-lg gap-2">
-            <a th:if="${assemblea.getStepOdg() < assemblea.getOdg().length - 1 && assemblea.isInCorso()}"
+            <a th:if="${isProprietario && assemblea.getStepOdg() < assemblea.getOdg().length - 1 && assemblea.isInCorso()}"
                th:href="@{/assemblea/{id}/avanza-odg(id=${assemblea.getId()})}">
                 <button class="btn btn-primary btn-sm">Prossimo punto</button>
             </a>
-            <a th:if="${assemblea.getFine() == null}" th:href="@{/assemblea/{id}/odg(id=${assemblea.getId()})}">
+            <a th:if="${isProprietario && assemblea.getFine() == null}" th:href="@{/assemblea/{id}/odg(id=${assemblea.getId()})}">
                 <button class="btn btn-sm">Modifica OdG</button>
             </a>
             <a th:href="@{/assemblea/{id}/termina(id=${assemblea.getId()})}">

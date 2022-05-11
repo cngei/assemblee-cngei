@@ -67,8 +67,7 @@ public class AssembleaController {
           "canStop", assemblea.get().isInCorso() && assemblea.get().getIdProprietario().equals(idUtente),
           "votazioneState", votazioneState,
           "tessera", idUtente,
-          "isProprietario", idUtente == assemblea.get().getIdProprietario()
-
+          "isProprietario", idUtente == assemblea.get().getIdProprietario() || (assemblea.get().getIdPresidente() != null && idUtente == assemblea.get().getIdPresidente())
       ));
       return "assemblee/view";
     }
