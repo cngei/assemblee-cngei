@@ -3,7 +3,7 @@
 <th:block th:include="fragments/base.html :: page">
     <div layout:fragment="content">
         <h2 class="text-xl" th:text="${assemblea.getNome()}"></h2>
-        <div th:if="${delegaExists != -1}">
+        <div th:if="${!delegaExists.equals('')}">
             <p>Hai delegato
                 <th:block th:text="${delegaExists}"></th:block>
             </p>
@@ -14,7 +14,7 @@
                 <button class="btn btn-outline">Torna all'assemblea</button>
             </a>
         </div>
-        <form th:if="${delegaExists == -1}" th:object="${delega}" method="post">
+        <form th:if="${delegaExists.equals('')}" th:object="${delega}" method="post">
             <select class="select w-full max-w-sm input-bordered my-2" th:field="*{tessera}" required>
                 <option disabled selected th:value="null">Seleziona chi vuoi delegare</option>
                 <option
