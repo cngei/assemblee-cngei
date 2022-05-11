@@ -3,17 +3,20 @@
 <th:block th:include="fragments/base.html :: page">
     <div layout:fragment="content">
         <div class="ml-2">
-            <p th:if="${presenti == null || presenti.size() == 0}">Non ci sono presenti al momento</p>
-        <ol class="list-decimal">
-            <li th:each="presente : ${presenti}">
-                <div>
-                    <span th:text="${presente.getValue()}"></span> - <span th:text="${presente.getKey()}"></span>
-                    <a th:href="${'/assemblea/' + assembleaId + '/caccia/' + presente.getKey()}">
-                        <button class="btn btn-outline btn-sm">Segna assente</button>
-                    </a>
-                </div>
-            </li>
-        </ol>
+            <table class="table table-zebra w-full rounded">
+                <tbody>
+                <tr th:each="partecipante : ${partecipanti}">
+                    <td th:text="${partecipante.getKey()}"></td>
+                    <td th:text="${partecipante.getValue()}"></td>
+                    <td>
+                        <a th:if="${presenti.contains(partecipante.getKey())}"
+                           th:href="${'/assemblea/' + assembleaId + '/caccia/' + partecipante.getKey()}">
+                            <button class="btn btn-outline btn-sm mb-1">Segna assente</button>
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
         </div>
         <div class="mt-4">
             <a th:href="${'/assemblea/' + assembleaId}">

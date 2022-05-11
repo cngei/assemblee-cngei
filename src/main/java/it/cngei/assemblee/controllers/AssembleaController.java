@@ -102,7 +102,12 @@ public class AssembleaController {
 
   @GetMapping("/{id}/presenti")
   public String getPresenti(@PathVariable("id") Long id, Model model) {
-    model.addAttribute("presenti", assembleaState.getPresenti(id).stream().map(x -> Map.entry(x, socioRepository.findById(x).map(Socio::getNome).orElse(x.toString()))).collect(Collectors.toList()));
+    var assemblea = assembleeRepository.findById(id);
+    model.addAttribute("partecipanti", Arrays.stream(assemblea.get().getPartecipanti())
+        .map(x -> Map.entry(x, socioRepository.findById(x).map(Socio::getNome).orElse(x.toString())))
+            .sorted(Map.Entry.comparingByValue())
+        .collect(Collectors.toList()));
+    model.addAttribute("presenti", assembleaState.getPresenti(id));
     model.addAttribute("assembleaId", id);
     return "assemblee/presenti";
   }

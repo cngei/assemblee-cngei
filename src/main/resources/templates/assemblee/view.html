@@ -9,6 +9,9 @@
                     <button class="btn btn-sm btn-outline" th:if="${!hasDelega}">Delega</button>
                     <button class="btn btn-sm" th:if="${hasDelega}">Annulla delega</button>
                 </a>
+                <a th:if="${!assemblea.isInCorso()}" th:href="@{/assemblea/{id}/presenti(id=${assemblea.getId()})}">
+                    <button class="btn btn-sm ml-1">Elenco partecipanti</button>
+                </a>
                 <th:block th:if="${assemblea.isInCorso()}">
                     <a th:href="@{/assemblea/{id}/presenza(id=${assemblea.getId()})}"
                        th:unless="${hasDelega}"
