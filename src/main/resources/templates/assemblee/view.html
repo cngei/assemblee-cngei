@@ -2,11 +2,11 @@
 <html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base.html}">
 <th:block th:include="fragments/base.html :: page">
     <div layout:fragment="content">
-        <div class="flex flex-wrap w-full">
+        <div class="grid grid-flow-column gap-4 grid-cols-1 lg:grid-cols-2">
             <h2 class="text-xl" th:text="${assemblea.getNome()}"></h2>
-            <th:block th:if="${assemblea.getFine() == null}">
+            <div th:if="${assemblea.getFine() == null}" class="flex sm:justify-end justify-between">
                 <a th:href="@{/assemblea/{id}/delega(id=${assemblea.getId()})}" class="ml-1">
-                    <button class="btn btn-sm" th:if="${!hasDelega}">Delega</button>
+                    <button class="btn btn-sm btn-outline" th:if="${!hasDelega}">Delega</button>
                     <button class="btn btn-sm" th:if="${hasDelega}">Annulla delega</button>
                 </a>
                 <th:block th:if="${assemblea.isInCorso()}">
@@ -17,18 +17,18 @@
                         <button class="btn btn-warning btn-sm" th:if="${isPresente}">Esci dall'assemblea</button>
                     </a>
                 </th:block>
-            </th:block>
+            </div>
         </div>
         <a th:href="@{/assemblea/{id}/inizia(id=${assemblea.getId()})}">
             <button class="btn btn-success" th:if="${canStart}">Inizia assemblea</button>
         </a>
-        <div th:if="${assemblea.getIdPresidente() == null}" class="flex mt-2 items-center justify-between max-w-md">
+        <div th:if="${assemblea.getIdPresidente() == null && isProprietario}" class="flex mt-2 items-center justify-between">
             <p>Non è ancora stato nominato il presidente dell'assemblea</p>
             <a th:href="@{/assemblea/{id}/nomina-presidente(id=${assemblea.getId()})}" class="ml-1">
                 <button class="btn btn-primary btn-sm">Nomina presidente</button>
             </a>
         </div>
-        <div class="grid grid-flow-column gap-4 grid-cols-2">
+        <div class="grid grid-flow-column gap-4 sm:grid-cols-2 grid-cols-1">
             <div class="card bg-base-100 shadow-xl pb-2 h-100" th:each="votazione : ${votazioni}">
                 <div class="card-body">
                     <h2 class="card-title" th:text="${votazione.getQuesito()}"></h2>
@@ -39,12 +39,12 @@
                            th:href="@{/assemblea/{id}/votazione/{idVotazione}(id=${assemblea.getId()},idVotazione=${votazione.getId()})}">
                             <button class="btn btn-primary">Vota</button>
                         </a>
-                        <a th:if="${votazione.isTerminata() || votazioneState.getVotanti(votazione.getId()).contains(tessera)}"
+                        <a th:if="${votazione.isTerminata() || (votazione.getTipoVotazione() == 0 && votazioneState.getVotanti(votazione.getId()).contains(tessera))}"
                            th:href="@{/assemblea/{id}/votazione/{idVotazione}/risultati(id=${assemblea.getId()},idVotazione=${votazione.getId()})}">
                             <button class="btn">Risultati</button>
                         </a>
                         <button th:if="${(!isPresente || hasDelega) && !votazione.isTerminata()}"
-                                class="btn btn-disabled">Devi essere presente in proprio per votare
+                                class="btn btn-disabled">Non sei presente
                         </button>
                         <a th:if="${canStop && !votazione.isTerminata()}"
                            th:href="@{/assemblea/{id}/votazione/{idVotazione}/termina(id=${assemblea.getId()},idVotazione=${votazione.getId()})}">
@@ -57,10 +57,10 @@
         <div th:if="${assemblea.getOdg().length == 0}">
             <p>Non &egrave; ancora disponibile l'ordine del giorno.</p>
         </div>
-        <ul class="steps steps-vertical" th:if="${assemblea.getOdg().length > 0}">
+        <ul class="steps steps-vertical w-full" th:if="${assemblea.getOdg().length > 0}">
             <li class="step" th:classappend="${iStat.index <= assemblea.getStepOdg()} ? 'step-primary' : ''"
                 th:each="punto, iStat : ${assemblea.getOdg()}">
-                <div class="flex justify-between max-w-md items-center w-full text-left">
+                <div class="flex justify-between items-center w-full text-left">
                     <span th:text="${punto}"></span>
                     <th:block th:if="${assemblea.isInCorso() && iStat.index == assemblea.getStepOdg()}">
                         <a th:href="@{/assemblea/{id}/votazione/crea(id=${assemblea.getId()})}">
@@ -71,15 +71,15 @@
             </li>
         </ul>
         <th:block th:if="${assemblea.isInCorso()}">
-            <div class="flex mt-2 items-center justify-between max-w-md my-4">
+            <div class="flex mt-2 items-center justify-between w-full my-4">
                 <p>Sono presenti <strong th:text="${presenti.size()}"></strong> aventi diritto su <span
                         th:text="${assemblea.getPartecipanti().length}"></span></p>
-                <a th:href="@{/assemblea/{id}/partecipanti(id=${assemblea.getId()})}" class="ml-1">
+                <a th:if="${presenti.size() > 0}" th:href="@{/assemblea/{id}/presenti(id=${assemblea.getId()})}" class="ml-1">
                     <button class="btn btn-sm">Vedi presenti</button>
                 </a>
             </div>
         </th:block>
-        <div class="w-full">
+        <div class="grid grid-flow-col-dense max-w-lg gap-2">
             <a th:if="${assemblea.getStepOdg() < assemblea.getOdg().length - 1 && assemblea.isInCorso()}"
                th:href="@{/assemblea/{id}/avanza-odg(id=${assemblea.getId()})}">
                 <button class="btn btn-primary btn-sm">Prossimo punto</button>
@@ -89,8 +89,8 @@
             </a>
             <a th:href="@{/assemblea/{id}/termina(id=${assemblea.getId()})}">
                 <button class="btn btn-error btn-sm" th:if="${canStop}"
-                        onclick="return window.confirm('Questa operazione non può essere annullata, confermi?')">Termina
-                    assemblea
+                        onclick="return window.confirm('Questa operazione non può essere annullata, confermi?')">
+                    Termina assemblea
                 </button>
             </a>
         </div>

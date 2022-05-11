@@ -4,7 +4,7 @@
     <div layout:fragment="content">
         <div th:if="${assemblee.size() > 0}">
             <h2 class="text-xl">Elenco assemblee disponibili:</h2>
-            <div class="grid grid-flow-column gap-4 grid-cols-2">
+            <div class="grid grid-flow-column gap-4 grid-cols-1 md:grid-cols-2">
                 <div class="card bg-base-100 shadow-xl pb-2 h-100" th:each="assemblea : ${assemblee}">
                     <div class="card-body">
                         <h2 class="card-title" th:text="${assemblea.getNome()}"></h2>

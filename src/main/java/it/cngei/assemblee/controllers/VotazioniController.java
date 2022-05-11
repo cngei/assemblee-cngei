@@ -1,9 +1,11 @@
 package it.cngei.assemblee.controllers;
 
 import it.cngei.assemblee.dtos.VotazioneEditModel;
+import it.cngei.assemblee.entities.Socio;
 import it.cngei.assemblee.entities.Votazione;
 import it.cngei.assemblee.enums.TipoVotazione;
 import it.cngei.assemblee.repositories.AssembleeRepository;
+import it.cngei.assemblee.repositories.SocioRepository;
 import it.cngei.assemblee.repositories.VotazioneRepository;
 import it.cngei.assemblee.repositories.VotiRepository;
 import it.cngei.assemblee.state.AssembleaState;
@@ -22,12 +24,14 @@ public class VotazioniController {
   private final AssembleeRepository assembleeRepository;
   private final VotazioneRepository votazioneRepository;
   private final VotiRepository votiRepository;
+  private final SocioRepository socioRepository;
   private final AssembleaState assembleaState;
 
-  public VotazioniController(AssembleeRepository assembleeRepository, VotazioneRepository votazioneRepository, VotiRepository votiRepository, AssembleaState assembleaState) {
+  public VotazioniController(AssembleeRepository assembleeRepository, VotazioneRepository votazioneRepository, VotiRepository votiRepository, SocioRepository socioRepository, AssembleaState assembleaState) {
     this.assembleeRepository = assembleeRepository;
     this.votazioneRepository = votazioneRepository;
     this.votiRepository = votiRepository;
+    this.socioRepository = socioRepository;
     this.assembleaState = assembleaState;
   }
 
@@ -90,6 +94,7 @@ public class VotazioniController {
     var votazione = votazioneRepository.findById(idVotazione);
     var voti = votiRepository.findAllByIdVotazione(idVotazione).stream()
         .peek(x -> x.setId(x.getId().split("-")[0])).collect(Collectors.toList());
+    var isPalese =votazione.get().getTipoVotazione() == TipoVotazione.PALESE;
 
     var inProprio = IntStream.range(0, votazione.get().getScelte().length)
             .mapToLong(i -> voti.stream().filter(x -> !x.isPerDelega() && Arrays.stream(x.getScelte()).anyMatch(y -> y == i)).count()).toArray();
@@ -99,7 +104,11 @@ public class VotazioniController {
     model.addAllAttributes(Map.of(
         "idAssemblea", id,
         "votazione", votazione.get(),
-        "voti", voti,
+        "voti", voti.stream().peek(x -> {
+          if(isPalese) {
+            x.setId(socioRepository.findById(Long.valueOf(x.getId())).map(Socio::getNome).orElse(x.getId()));
+          }
+        }).collect(Collectors.toList()),
         "inProprio", inProprio,
         "perDelega", perDelega
     ));

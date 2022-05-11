@@ -67,6 +67,7 @@ public class VotiController {
           "assemblea", assemblea.get(),
           "votazione", votazione.get(),
           "hasDelega", delega.isPresent(),
+          "isPalese", votazione.get().getTipoVotazione() == TipoVotazione.PALESE,
           "idProprio", idProprio,
           "idDelega", delega.isPresent() ? idDelega : -1L,
           "votoModel", votoModel
@@ -117,15 +118,21 @@ public class VotiController {
         votiRepository.save(perDelega);
         votazioneState.setVotante(idVotazione, delega.get().getDelegante());
       }
-
-      return "redirect:/assemblea/" + id + "/votazione/" + idVotazione + "/risultati";
+      if(votazione.get().getTipoVotazione() == TipoVotazione.PALESE) {
+        return "redirect:/assemblea/" + id + "/votazione/" + idVotazione + "/risultati";
+      } else {
+        return "redirect:/assemblea/" + id;
+      }
     }
   }
 
   private Long[] parseScelte(List<String> scelte, String[] opzioni) {
-    var foo = Arrays.stream(opzioni).toList();
+    if(scelte == null) {
+      return new Long[]{};
+    }
+    var opzioniStream = Arrays.stream(opzioni).toList();
     return scelte.stream()
-        .map(foo::indexOf)
+        .map(opzioniStream::indexOf)
         .filter(x -> x >= 0)
         .limit(2)
         .map(Long::valueOf)

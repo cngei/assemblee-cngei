@@ -1,5 +1,15 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base.html}">
+<head>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        function setSoci() {
+            const soci = /*[[${soci}]]*/
+            document.querySelector('[data-id="partecipanti"]').value = soci;
+        }
+        /*]]>*/
+    </script>
+</head>
 <th:block th:include="fragments/base.html :: page">
     <div layout:fragment="content">
         <h2 class="text-xl">Nuova assemblea</h2>
@@ -54,11 +64,13 @@
                 <label class="label">
                     <span class="label-text">Elenco partecipanti</span>
                 </label>
+                <button th:if="${nomeSezione != null}" onclick="setSoci()" type="button" class="btn mb-2 btn-sm btn-outline">Carica aventi diritto per: <th:block th:text="${nomeSezione}"></th:block></button>
                 <textarea
                         placeholder="Un numero di tessera per riga"
                         class="textarea textarea-bordered"
                         th:field="*{partecipanti}"
                         pattern="\d*"
+                        data-id="partecipanti"
                         required
                 ></textarea>
             </div>

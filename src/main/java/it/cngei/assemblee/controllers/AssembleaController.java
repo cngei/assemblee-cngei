@@ -2,8 +2,10 @@ package it.cngei.assemblee.controllers;
 
 import it.cngei.assemblee.dtos.AssembleaEditModel;
 import it.cngei.assemblee.entities.Assemblea;
+import it.cngei.assemblee.entities.Socio;
 import it.cngei.assemblee.repositories.AssembleeRepository;
 import it.cngei.assemblee.repositories.DelegheRepository;
+import it.cngei.assemblee.repositories.SocioRepository;
 import it.cngei.assemblee.repositories.VotazioneRepository;
 import it.cngei.assemblee.state.AssembleaState;
 import it.cngei.assemblee.state.VotazioneState;
@@ -15,8 +17,10 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/assemblea")
@@ -24,13 +28,15 @@ public class AssembleaController {
   private final AssembleeRepository assembleeRepository;
   private final VotazioneRepository votazioneRepository;
   private final DelegheRepository delegheRepository;
+  private final SocioRepository socioRepository;
   private final AssembleaState assembleaState;
   private final VotazioneState votazioneState;
 
-  public AssembleaController(AssembleeRepository assembleeRepository, VotazioneRepository votazioneRepository, DelegheRepository delegheRepository, AssembleaState assembleaState, VotazioneState votazioneState) {
+  public AssembleaController(AssembleeRepository assembleeRepository, VotazioneRepository votazioneRepository, DelegheRepository delegheRepository, SocioRepository socioRepository, AssembleaState assembleaState, VotazioneState votazioneState) {
     this.assembleeRepository = assembleeRepository;
     this.votazioneRepository = votazioneRepository;
     this.delegheRepository = delegheRepository;
+    this.socioRepository = socioRepository;
     this.assembleaState = assembleaState;
     this.votazioneState = votazioneState;
   }
@@ -58,7 +64,9 @@ public class AssembleaController {
           "canStart", !assemblea.get().isInCorso() && assemblea.get().getIdProprietario().equals(idUtente),
           "canStop", assemblea.get().isInCorso() && assemblea.get().getIdProprietario().equals(idUtente),
           "votazioneState", votazioneState,
-          "tessera", idUtente
+          "tessera", idUtente,
+          "isProprietario", idUtente == assemblea.get().getIdProprietario()
+
       ));
       return "assemblee/view";
     }
@@ -78,8 +86,29 @@ public class AssembleaController {
     return "redirect:/assemblea/" + id;
   }
 
+  @GetMapping("/{id}/presenti")
+  public String getPresenti(@PathVariable("id") Long id, Model model) {
+    model.addAttribute("presenti", assembleaState.getPresenti(id).stream().map(x -> Map.entry(x, socioRepository.findById(x).map(Socio::getNome).orElse(x.toString()))).collect(Collectors.toList()));
+    model.addAttribute("assembleaId", id);
+    return "assemblee/presenti";
+  }
+
+  @GetMapping("/{id}/caccia/{idUtente}")
+  public String kickPartecipante(@PathVariable("id") Long id, @PathVariable("idUtente") Long idUtente) {
+    assembleaState.setAssente(id, idUtente);
+    return "redirect:/assemblea/" + id + "/presenti";
+  }
+
   @GetMapping("crea")
-  public String getCreateAssemblea() {
+  public String getCreateAssemblea(Model model, Principal principal) {
+    var me = Utils.getKeycloakUserFromPrincipal(principal);
+    List<String> groups = (List<String>) me.getOtherClaims().get("groups");
+    var sezione = groups.stream().filter(x -> x.matches("/[\\w\\s']+")).findFirst().map(x -> x.substring(1));
+    if(sezione.isPresent()) {
+      model.addAttribute("nomeSezione", sezione.get());
+      var soci = socioRepository.findBySezione(sezione.get());
+      model.addAttribute("soci", soci.stream().map(x -> String.valueOf(x.getId())).collect(Collectors.joining("\n")));
+    }
     return "assemblee/create";
   }
 

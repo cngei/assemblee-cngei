@@ -8,8 +8,7 @@
             <tr>
                 <th>Opzione</th>
                 <th>Totale</th>
-                <th>In proprio</th>
-                <th>Per delega</th>
+                <th>In proprio/Delega</th>
             </tr>
             </thead>
             <tbody>
@@ -20,9 +19,10 @@
                 <td>
                     <strong th:text="${inProprio[iStat.index] + perDelega[iStat.index]}"></strong>
                 </td>
-                <td th:text="${inProprio[iStat.index]}">
-                </td>
-                <td th:text="${perDelega[iStat.index]}">
+                <td>
+                    <span th:text="${inProprio[iStat.index]}"></span>
+                    /
+                    <span th:text="${perDelega[iStat.index]}"></span>
                 </td>
             </tr>
             <tr th:if="${votazione.getPresenti() != null}">
@@ -32,15 +32,16 @@
                 <td>
                     <strong th:text="${votazione.getPresenti()}"></strong>
                 </td>
-                <td colspan="2">
+                <td>
                 </td>
             </tr>
             </tbody>
         </table>
         <div class="mt-2 w-full">
             <div tabindex="0" class="collapse collapse-arrow border rounded-box">
+                <input type="checkbox" />
                 <div class="collapse-title text-xl font-medium">
-                    Elenco voti
+                    Dettaglio voti
                 </div>
                 <div class="collapse-content">
                     <table class="table w-full mt-2">

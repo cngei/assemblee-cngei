@@ -6,12 +6,9 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     generate-ddl: true
     defer-datasource-initialization: true
-  sql:
-    init:
-      mode: always
 keycloak:
   auth-server-url: https://auth.cngei.it/auth
   realm: cngei
