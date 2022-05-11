@@ -74,6 +74,20 @@
                         required
                 ></textarea>
             </div>
+            <div class="form-control max-w-md">
+                <label class="label cursor-pointer">
+                    <span class="label-text">Richiedi autenticazione a 2 fattori</span>
+                    <input type="checkbox" th:field="*{require2fa}" class="checkbox"></input>
+                </label>
+            </div>
+            <div class="alert alert-info shadow-lg my-4">
+                <div>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current flex-shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <div>
+                        <p>L'autenticazione a due fattori garantisce maggiormente l'autenticit&agrave; del voto, ma richiede che tutti i partecipanti abbiano un telefono oltre al dispositivo che usano per votare e pu&ograve; essere scomoda per i meno tecnologici</p>
+                    </div>
+                </div>
+            </div>
             <button class="btn btn-primary mt-2">Crea</button>
             <a href="/"><button class="btn btn-outline" type="button">Annulla</button></a>
         </form>

@@ -1,0 +1,23 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base.html}">
+<th:block th:include="fragments/base.html :: page">
+    <div layout:fragment="content">
+        <p>Scansiona il QR con il tuo telefono usando un app come Google Authenticator.</p>
+        <p>Quando voterai, ti sar&agrave; richiesto di inserire il codice che vedrai dentro Authenticator per validare la tua identit&agrave;</p>
+        <img th:src="${key}"/>
+        <div class="alert alert-warning shadow-lg my-4">
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current flex-shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <div>
+                    <p>Se esci dall'assemblea riceverai un nuovo QR diverso da questo e dovrai ripetere l'importazione!</p>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4">
+            <a th:href="${'/assemblea/' + assembleaId}">
+                <button class="btn btn-outline">Torna all'assemblea</button>
+            </a>
+        </div>
+    </div>
+</th:block>
+</html>

@@ -9,4 +9,5 @@ public class AssembleaEditModel {
   private String partecipanti;
   private String dateTime;
   private String odg;
+  private boolean require2fa;
 }

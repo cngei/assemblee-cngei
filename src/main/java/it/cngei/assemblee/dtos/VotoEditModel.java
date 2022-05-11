@@ -10,4 +10,5 @@ public class VotoEditModel {
   private ArrayList<String> perDelega;
   private String idProprio;
   private String idDelega;
+  private String code2fa;
 }

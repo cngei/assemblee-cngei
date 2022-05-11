@@ -5,36 +5,36 @@
         window.onload = function () {
             const form = document.querySelector("form");
             const maxScelte = form.getAttribute('data-max-selected');
-            for(_input of document.querySelectorAll("input[data-delega='false']")) {
+            for (_input of document.querySelectorAll("input[data-delega='false']")) {
                 _input.onchange = function (e) {
-                    if(e.target.checked) {
+                    if (e.target.checked) {
                         form.setAttribute('data-selected-proprio', Number.parseInt(form.getAttribute('data-selected-proprio'), 10) + 1);
-                        if(form.getAttribute('data-selected-proprio') >= maxScelte) {
-                            for(tmp of document.querySelectorAll("input[data-delega='false']")) {
-                                if(!tmp.checked) tmp.disabled = true;
+                        if (form.getAttribute('data-selected-proprio') >= maxScelte) {
+                            for (tmp of document.querySelectorAll("input[data-delega='false']")) {
+                                if (!tmp.checked) tmp.disabled = true;
                             }
                         }
                     } else {
                         form.setAttribute('data-selected-proprio', Number.parseInt(form.getAttribute('data-selected-proprio'), 10) - 1);
-                        for(tmp of document.querySelectorAll("input[data-delega='false']")) {
-                            if(tmp.disabled) tmp.disabled = false;
+                        for (tmp of document.querySelectorAll("input[data-delega='false']")) {
+                            if (tmp.disabled) tmp.disabled = false;
                         }
                     }
                 }
             }
-            for(_input of document.querySelectorAll("input[data-delega='true']")) {
+            for (_input of document.querySelectorAll("input[data-delega='true']")) {
                 _input.onchange = function (e) {
-                    if(e.target.checked) {
+                    if (e.target.checked) {
                         form.setAttribute('data-selected-delega', Number.parseInt(form.getAttribute('data-selected-delega'), 10) + 1);
-                        if(form.getAttribute('data-selected-delega') >= maxScelte) {
-                            for(tmp of document.querySelectorAll("input[data-delega='true']")) {
-                                if(!tmp.checked) tmp.disabled = true;
+                        if (form.getAttribute('data-selected-delega') >= maxScelte) {
+                            for (tmp of document.querySelectorAll("input[data-delega='true']")) {
+                                if (!tmp.checked) tmp.disabled = true;
                             }
                         }
                     } else {
                         form.setAttribute('data-selected-delega', Number.parseInt(form.getAttribute('data-selected-delega'), 10) - 1);
-                        for(tmp of document.querySelectorAll("input[data-delega='true']")) {
-                            if(tmp.disabled) tmp.disabled = false;
+                        for (tmp of document.querySelectorAll("input[data-delega='true']")) {
+                            if (tmp.disabled) tmp.disabled = false;
                         }
                     }
                 }
@@ -45,13 +45,17 @@
 <th:block th:include="fragments/base.html :: page">
     <div layout:fragment="content">
         <h2 class="text-xl" th:text="${votazione.getQuesito()}"></h2>
-        <form th:object="${votoModel}" method="post" data-selected-proprio="0" data-selected-delega="0" th:data-max-selected="${votazione.getNumeroScelte()}">
+        <form th:object="${votoModel}" method="post" data-selected-proprio="0" data-selected-delega="0"
+              th:data-max-selected="${votazione.getNumeroScelte()}">
             <input type="hidden" th:value="${idProprio}" th:field="*{idProprio}"></input>
             <input type="hidden" th:value="${idDelega}" th:field="*{idDelega}"></input>
             <table class="table w-full mt-2">
                 <thead>
                 <tr>
-                    <th>Opzione (max <th:block th:text="${votazione.getNumeroScelte()}"></th:block>)</th>
+                    <th>Opzione (max
+                        <th:block th:text="${votazione.getNumeroScelte()}"></th:block>
+                        )
+                    </th>
                     <th>In proprio</th>
                     <th th:if="${hasDelega}">Per delega</th>
                 </tr>
@@ -77,9 +81,25 @@
                 </tr>
                 </tbody>
             </table>
+            <div class="form-control w-full max-w-md" th:if="${assemblea.isRequire2FA()}">
+                <label class="label">
+                    <span class="label-text">Codice di verifica</span>
+                </label>
+                <input
+                        type="text"
+                        placeholder="Codice da Authenticator"
+                        class="input input-bordered w-full"
+                        required
+                        th:field="*{code2fa}"
+                ></input>
+            </div>
             <div class="alert alert-warning shadow-lg my-4" th:if="${isPalese}">
                 <div>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current flex-shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                         class="stroke-current flex-shrink-0 w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
                     <div>
                         <p>Questa votazione &egrave; a scrutinio nominale</p>
                     </div>
@@ -87,24 +107,29 @@
             </div>
             <div class="alert alert-info shadow-lg my-4" th:if="${idProprio != null}" th:unless="${isPalese}">
                 <div>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current flex-shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                         class="stroke-current flex-shrink-0 w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
                     <div>
-                    <p>Nell'elenco voti, le tue scelte saranno registrate con l'id che trovi qui sotto.</p>
-                    <p>Per mantenere segreto il voto, quando aggiorni o cambi pagina, non potrai più vedere i codici dei tuoi voti. L'associazione tra id voto e votante <strong>non</strong> viene salvata.</p>
-                    <ul class="list-disc">
-                        <li th:text="${idProprio.split('-')[0]}"></li>
-                        <li th:if="${idDelega != -1}" th:text="${idDelega.split('-')[0]}"></li>
-                    </ul>
+                        <p>Nell'elenco voti, le tue scelte saranno registrate con l'id che trovi qui sotto.</p>
+                        <p>Per mantenere segreto il voto, quando aggiorni o cambi pagina, non potrai più vedere i codici
+                            dei tuoi voti. L'associazione tra id voto e votante <strong>non</strong> viene salvata.</p>
+                        <ul class="list-disc">
+                            <li th:text="${idProprio.split('-')[0]}"></li>
+                            <li th:if="${idDelega != -1}" th:text="${idDelega.split('-')[0]}"></li>
+                        </ul>
                     </div>
                 </div>
             </div>
-            <button class="btn btn-primary">Invia voto</button>
+            <div class="flex">
+                <button class="btn btn-primary">Invia voto</button>
+                <a th:href="${'/assemblea/' + assemblea.getId()}" class="ml-1">
+                    <button class="btn btn-outline" type="button">Torna all'assemblea</button>
+                </a>
+            </div>
         </form>
-        <div class="mt-4">
-            <a th:href="${'/assemblea/' + assemblea.getId()}">
-                <button class="btn btn-outline">Torna all'assemblea</button>
-            </a>
-        </div>
     </div>
 </th:block>
 </html>

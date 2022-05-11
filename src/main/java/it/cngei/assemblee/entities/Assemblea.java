@@ -42,6 +42,7 @@ public class Assemblea {
   private LocalDateTime fine;
   private boolean inCorso;
   private Long stepOdg;
+  private boolean require2FA;
 
   @Column(name = "partecipanti", columnDefinition = "bigint[]")
   @Type(type = "long-array")

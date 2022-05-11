@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.j256.twofactorauth.TimeBasedOneTimePasswordUtil.qrImageUrl;
+
 @Controller
 @RequestMapping("/assemblea")
 public class AssembleaController {
@@ -76,14 +78,26 @@ public class AssembleaController {
   public String togglePresenza(@PathVariable("id") Long id, Principal principal) {
     var me = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
     var delega = delegheRepository.findDelegaByDelegatoAndIdAssemblea(me, id);
+    var assemblea = assembleeRepository.findById(id);
     if(assembleaState.getPresenti(id).contains(me)) {
       assembleaState.setAssente(id, me);
       delega.ifPresent(value -> assembleaState.setAssente(id, value.getDelegante()));
     } else {
       assembleaState.setPresente(id, me);
       delega.ifPresent(value -> assembleaState.setPresente(id, value.getDelegante()));
+      if(assemblea.get().isRequire2FA()) {
+        return "redirect:/assemblea/" + id + "/2fa";
+      }
     }
     return "redirect:/assemblea/" + id;
+  }
+
+  @GetMapping("/{id}/2fa")
+  public String get2fa(@PathVariable("id") Long id, Principal principal, Model model) {
+    var me = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
+    model.addAttribute("key", qrImageUrl("Assemblea - " + me, assembleaState.get2faSecret(id, me)));
+    model.addAttribute("assembleaId", id);
+    return "assemblee/2fa";
   }
 
   @GetMapping("/{id}/presenti")
@@ -123,6 +137,7 @@ public class AssembleaController {
         .convocazione(LocalDateTime.parse(assembleaModel.getDateTime()))
         .stepOdg(0L)
         .odg(Arrays.stream(assembleaModel.getOdg().split("\n")).filter(x -> !x.isBlank()).toArray(String[]::new))
+        .require2FA(assembleaModel.isRequire2fa())
         .build();
 
     assembleeRepository.save(newAssemblea);

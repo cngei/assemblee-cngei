@@ -48,7 +48,7 @@
                         </button>
                         <a th:if="${canStop && !votazione.isTerminata()}"
                            th:href="@{/assemblea/{id}/votazione/{idVotazione}/termina(id=${assemblea.getId()},idVotazione=${votazione.getId()})}">
-                            <button class="btn btn-primary">Termina votazione</button>
+                            <button class="btn btn-error">Termina votazione</button>
                         </a>
                     </div>
                 </div>

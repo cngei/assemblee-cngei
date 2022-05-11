@@ -8,8 +8,10 @@ import it.cngei.assemblee.repositories.AssembleeRepository;
 import it.cngei.assemblee.repositories.DelegheRepository;
 import it.cngei.assemblee.repositories.VotazioneRepository;
 import it.cngei.assemblee.repositories.VotiRepository;
+import it.cngei.assemblee.state.AssembleaState;
 import it.cngei.assemblee.state.VotazioneState;
 import it.cngei.assemblee.utils.Utils;
+import lombok.SneakyThrows;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.*;
+
+import static com.j256.twofactorauth.TimeBasedOneTimePasswordUtil.generateCurrentNumberString;
 
 @Controller
 @RequestMapping("/assemblea/{id}/votazione")
@@ -26,13 +30,15 @@ public class VotiController {
   private final DelegheRepository delegheRepository;
   private final VotiRepository votiRepository;
   private final VotazioneState votazioneState;
+  private final AssembleaState assembleaState;
 
-  public VotiController(AssembleeRepository assembleeRepository, VotazioneRepository votazioneRepository, DelegheRepository delegheRepository, VotiRepository votiRepository, VotazioneState votazioneState) {
+  public VotiController(AssembleeRepository assembleeRepository, VotazioneRepository votazioneRepository, DelegheRepository delegheRepository, VotiRepository votiRepository, VotazioneState votazioneState, AssembleaState assembleaState) {
     this.assembleeRepository = assembleeRepository;
     this.votazioneRepository = votazioneRepository;
     this.delegheRepository = delegheRepository;
     this.votiRepository = votiRepository;
     this.votazioneState = votazioneState;
+    this.assembleaState = assembleaState;
   }
 
   @ModelAttribute(name = "votoModel")
@@ -76,6 +82,7 @@ public class VotiController {
     }
   }
 
+  @SneakyThrows
   @PostMapping("/{idVotazione}")
   public String handleVoto(
       @PathVariable("id") Long id,
@@ -83,12 +90,19 @@ public class VotiController {
       VotoEditModel votoModel,
       Principal principal
   ) {
-    var me = Utils.getKeycloakUserFromPrincipal(principal);
+    var me = Long.valueOf(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
     var assemblea = assembleeRepository.findById(id);
     var votazione = votazioneRepository.findById(idVotazione);
-    var delega = delegheRepository.findDelegaByDelegatoAndIdAssemblea(Long.valueOf(me.getPreferredUsername()), id);
+    var delega = delegheRepository.findDelegaByDelegatoAndIdAssemblea(me, id);
 
-    if (votazioneState.getVotanti(idVotazione).contains(Long.valueOf(me.getPreferredUsername()))) {
+    if(!assembleaState.getPresenti(id).contains(me)) {
+      throw new AccessDeniedException("Devi essere presente per poter votare");
+    }
+    if(assemblea.get().isRequire2FA()) {
+      if(!votoModel.getCode2fa().equals(generateCurrentNumberString(assembleaState.get2faSecret(id, me))))
+        throw new AccessDeniedException("La verifica a 2 fattori non corrisponde");
+    }
+    if (votazioneState.getVotanti(idVotazione).contains(me)) {
       throw new AccessDeniedException("Hai già votato");
     }
     if (votazione.get().isTerminata()) {
@@ -106,7 +120,7 @@ public class VotiController {
           .scelte(parseScelte(votoModel.getInProprio(), votazione.get().getScelte()))
           .build();
       votiRepository.save(inProprio);
-      votazioneState.setVotante(idVotazione, Long.valueOf(me.getPreferredUsername()));
+      votazioneState.setVotante(idVotazione, me);
 
       if (delega.isPresent()) {
         var perDelega = Voto.builder()
