@@ -2,6 +2,7 @@ package it.cngei.assemblee.controllers;
 
 import it.cngei.assemblee.dtos.AssembleaEditModel;
 import it.cngei.assemblee.entities.Assemblea;
+import it.cngei.assemblee.entities.Delega;
 import it.cngei.assemblee.entities.Socio;
 import it.cngei.assemblee.repositories.AssembleeRepository;
 import it.cngei.assemblee.repositories.DelegheRepository;
@@ -100,14 +101,18 @@ public class AssembleaController {
   }
 
   @GetMapping("/{id}/presenti")
-  public String getPresenti(@PathVariable("id") Long id, Model model) {
+  public String getPresenti(@PathVariable("id") Long id, Model model, Principal principal) {
     var assemblea = assembleeRepository.findById(id);
+    var me = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
+    var deleghe = delegheRepository.findAllByIdAssemblea(id).stream().collect(Collectors.toMap(Delega::getDelegante, Delega::getDelegato));
     model.addAttribute("partecipanti", Arrays.stream(assemblea.get().getPartecipanti())
         .map(x -> Map.entry(x, socioRepository.findById(x).map(Socio::getNome).orElse(x.toString())))
             .sorted(Map.Entry.comparingByValue())
         .collect(Collectors.toList()));
     model.addAttribute("presenti", assembleaState.getPresenti(id));
     model.addAttribute("assembleaId", id);
+    model.addAttribute("deleghe", deleghe);
+    model.addAttribute("isCovepo", assemblea.get().getIdProprietario() == me || assemblea.get().getIdPresidente() == me);
     return "assemblee/presenti";
   }
 

@@ -141,9 +141,10 @@ public class VotiController {
   }
 
   private Long[] parseScelte(List<String> scelte, String[] opzioni) {
-    if(scelte == null) {
-      return new Long[]{};
+    if(scelte == null || scelte.isEmpty()) {
+      return new Long[]{(long) (opzioni.length - 1)};
     }
+
     var opzioniStream = Arrays.stream(opzioni).toList();
     return scelte.stream()
         .map(opzioniStream::indexOf)

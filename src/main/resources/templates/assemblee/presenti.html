@@ -9,10 +9,16 @@
                     <td th:text="${partecipante.getKey()}"></td>
                     <td th:text="${partecipante.getValue()}"></td>
                     <td>
-                        <a th:if="${presenti.contains(partecipante.getKey())}"
+                        <th:block th:if="${deleghe.containsKey(partecipante.getKey())}">
+                            <span>Ha delegato <th:block th:text="${deleghe.get(partecipante.getKey())}"></th:block></span>
+                        </th:block>
+                    </td>
+                    <td>
+                        <a th:if="${isCovepo && presenti.contains(partecipante.getKey())}"
                            th:href="${'/assemblea/' + assembleaId + '/caccia/' + partecipante.getKey()}">
                             <button class="btn btn-outline btn-sm mb-1">Segna assente</button>
                         </a>
+                        <th:block th:if="${!isCovepo && presenti.contains(partecipante.getKey())}">Presente</th:block>
                     </td>
                 </tr>
                 </tbody>
