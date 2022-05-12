@@ -36,7 +36,7 @@
                 <div class="card-body">
                     <h2 class="card-title" th:text="${votazione.getQuesito()}"></h2>
                     <p th:if="${votazione.isTerminata()}">Votazione terminata</p>
-                    <p th:if="${!votazione.isTerminata()}">Votazione aperta</p>
+                    <p th:if="${!votazione.isTerminata()}">Votazione aperta. <th:block th:text="${votazione.getVoti().size}"></th:block> voti su <th:block th:text="${presenti.size}"></th:block> presenti.</p>
                     <div class="card-actions justify-end">
                         <a th:if="${!hasDelega && !votazione.isTerminata() && isPresente && !votazioneState.getVotanti(votazione.getId()).contains(tessera)}"
                            th:href="@{/assemblea/{id}/votazione/{idVotazione}(id=${assemblea.getId()},idVotazione=${votazione.getId()})}">

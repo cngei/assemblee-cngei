@@ -11,6 +11,7 @@ import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Data
 @Builder
@@ -36,6 +37,9 @@ public class Votazione {
   private Long presenti;
 
   private String quesito;
+
+  @OneToMany(mappedBy = "idVotazione")
+  private List<Voto> voti;
 
   @Column(name = "scelte", columnDefinition = "varchar[]")
   @Type(type = "string-array")
