@@ -1,7 +1,9 @@
 package it.cngei.assemblee.controllers;
 
+import it.cngei.assemblee.dtos.MessageModel;
 import it.cngei.assemblee.dtos.NominaPresidenteEditModel;
 import it.cngei.assemblee.dtos.OdgEditModel;
+import it.cngei.assemblee.enums.TipoMessaggio;
 import it.cngei.assemblee.repositories.AssembleeRepository;
 import it.cngei.assemblee.utils.Utils;
 import org.springframework.stereotype.Controller;
@@ -16,9 +18,11 @@ import java.util.Arrays;
 @RequestMapping("/assemblea")
 public class AssembleaPresidenzaController {
   private final AssembleeRepository assembleeRepository;
+  private final MessageController messageController;
 
-  public AssembleaPresidenzaController(AssembleeRepository assembleeRepository) {
+  public AssembleaPresidenzaController(AssembleeRepository assembleeRepository, MessageController messageController) {
     this.assembleeRepository = assembleeRepository;
+    this.messageController = messageController;
   }
 
   @ModelAttribute(name = "odgModel")
@@ -82,6 +86,7 @@ public class AssembleaPresidenzaController {
         .toArray(String[]::new)
     );
     assembleeRepository.save(assemblea);
+    messageController.send(MessageModel.builder().idAssemblea(id).tipoMessaggio(TipoMessaggio.STEP_ODG).build());
 
     return "redirect:/assemblea/" + id;
   }
@@ -95,6 +100,7 @@ public class AssembleaPresidenzaController {
     var assemblea = maybeAssemblea.get();
     assemblea.setStepOdg(assemblea.getStepOdg() + 1);
     assembleeRepository.save(assemblea);
+    messageController.send(MessageModel.builder().idAssemblea(id).tipoMessaggio(TipoMessaggio.STEP_ODG).build());
 
     return "redirect:/assemblea/" + id;
   }
@@ -110,6 +116,7 @@ public class AssembleaPresidenzaController {
     if (!assemblea.isInCorso() && assemblea.getFine() == null && (assemblea.getIdProprietario() == idUtente || assemblea.getIdPresidente() == idUtente)) {
       assemblea.setInCorso(true);
       assembleeRepository.save(assemblea);
+      messageController.send(MessageModel.builder().idAssemblea(id).tipoMessaggio(TipoMessaggio.INIZIO).build());
     }
     return "redirect:/assemblea/" + id;
   }
@@ -126,6 +133,7 @@ public class AssembleaPresidenzaController {
       assemblea.setInCorso(false);
       assemblea.setFine(LocalDateTime.now());
       assembleeRepository.save(assemblea);
+      messageController.send(MessageModel.builder().idAssemblea(id).tipoMessaggio(TipoMessaggio.FINE).build());
     }
     return "redirect:/assemblea/" + id;
   }

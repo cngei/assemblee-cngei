@@ -1,8 +1,10 @@
 package it.cngei.assemblee.controllers;
 
+import it.cngei.assemblee.dtos.MessageModel;
 import it.cngei.assemblee.dtos.VotazioneEditModel;
 import it.cngei.assemblee.entities.Socio;
 import it.cngei.assemblee.entities.Votazione;
+import it.cngei.assemblee.enums.TipoMessaggio;
 import it.cngei.assemblee.enums.TipoVotazione;
 import it.cngei.assemblee.repositories.AssembleeRepository;
 import it.cngei.assemblee.repositories.SocioRepository;
@@ -26,13 +28,15 @@ public class VotazioniController {
   private final VotiRepository votiRepository;
   private final SocioRepository socioRepository;
   private final AssembleaState assembleaState;
+  private final MessageController messageController;
 
-  public VotazioniController(AssembleeRepository assembleeRepository, VotazioneRepository votazioneRepository, VotiRepository votiRepository, SocioRepository socioRepository, AssembleaState assembleaState) {
+  public VotazioniController(AssembleeRepository assembleeRepository, VotazioneRepository votazioneRepository, VotiRepository votiRepository, SocioRepository socioRepository, AssembleaState assembleaState, MessageController messageController) {
     this.assembleeRepository = assembleeRepository;
     this.votazioneRepository = votazioneRepository;
     this.votiRepository = votiRepository;
     this.socioRepository = socioRepository;
     this.assembleaState = assembleaState;
+    this.messageController = messageController;
   }
 
   @ModelAttribute(name = "votazioneModel")
@@ -69,6 +73,7 @@ public class VotazioniController {
         .terminata(false)
         .build();
     votazioneRepository.save(newVotazione);
+    messageController.send(MessageModel.builder().idAssemblea(id).tipoMessaggio(TipoMessaggio.VOTAZIONE).build());
 
     return "redirect:/assemblea/" + id;
   }
@@ -84,6 +89,7 @@ public class VotazioniController {
     temp.setTerminata(true);
     temp.setPresenti((long) assembleaState.getPresenti(id).size());
     votazioneRepository.save(temp);
+    messageController.send(MessageModel.builder().idAssemblea(id).tipoMessaggio(TipoMessaggio.VOTAZIONE).build());
 
     return "redirect:/assemblea/" + id + "/votazione/" + idVotazione + "/risultati";
   }
@@ -94,7 +100,7 @@ public class VotazioniController {
     var votazione = votazioneRepository.findById(idVotazione);
     var voti = votiRepository.findAllByIdVotazione(idVotazione).stream()
         .peek(x -> x.setId(x.getId().split("-")[0])).collect(Collectors.toList());
-    var isPalese =votazione.get().getTipoVotazione() == TipoVotazione.PALESE;
+    var isPalese = votazione.get().getTipoVotazione() == TipoVotazione.PALESE;
 
     var inProprio = IntStream.range(0, votazione.get().getScelte().length)
             .mapToLong(i -> voti.stream().filter(x -> !x.isPerDelega() && Arrays.stream(x.getScelte()).anyMatch(y -> y == i)).count()).toArray();

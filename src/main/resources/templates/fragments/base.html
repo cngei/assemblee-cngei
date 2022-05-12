@@ -5,7 +5,31 @@
     <title>CNGEI Assemblee</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@2.14.3/dist/full.css" rel="stylesheet" type="text/css"/>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js" integrity="sha512-iKDtgDyTHjAitUDdLljGhenhPwrbBfqTKWO1mkhSFH3A7blITC9MhYon6SjnMhp4o0rADGw9yAC6EW4t5a4K3g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script type="application/javascript" defer>
+        var stompClient = null;
+
+        function connect() {
+            var socket = new SockJS('/notify');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function() {
+                stompClient.subscribe('/socket/messages', function(message) {
+                    try {
+                       var msg = JSON.parse(message.body);
+                       if(window.location.pathname.startsWith("/assemblea/" + msg.idAssemblea)) {
+                           window.location.reload();
+                       }
+                    } catch (e) {
+                        console.log(e)
+                    }
+                });
+            });
+        }
+
+        connect();
+    </script>
 </head>
 <body>
 <div class="navbar bg-green-800" th:fragment="nav">
