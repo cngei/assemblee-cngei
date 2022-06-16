@@ -1,0 +1,26 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base.html}">
+<th:block th:include="fragments/base.html :: page">
+    <div layout:fragment="content">
+        <h2 class="text-xl">Nomina CoVePo</h2>
+        <form th:object="${covepoModel}" method="post">
+            <select
+                    multiple
+                    class="w-full max-w-sm my-2"
+                    th:field="*{tessere}"
+                    required>
+                <option disabled selected th:value="null">Seleziona i membri della CoVePo</option>
+                <option
+                        th:each="partecipante : ${assemblea.getPartecipanti()}"
+                        th:value="${partecipante}"
+                        th:text="${partecipante}">
+                </option>
+            </select>
+            <button class="btn btn-primary">Nomina</button>
+            <a th:href="@{/assemblea/{id}(id=${assemblea.getId()})}">
+                <button type="button" class="btn btn-outline">Annulla</button>
+            </a>
+        </form>
+    </div>
+</th:block>
+</html>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<th:block th:fragment="header">
+<div th:if="${assemblea.getFine() == null}" class="flex sm:justify-end justify-between">
+  <a th:href="@{/assemblea/{id}/delega(id=${assemblea.getId()})}" class="ml-1">
+    <button class="btn btn-sm btn-outline" th:if="${!hasDelega && canDelega}">Delega</button>
+    <button class="btn btn-sm" th:if="${hasDelega}">Annulla delega</button>
+  </a>
+  <a th:if="${!assemblea.isInCorso()}" th:href="@{/assemblea/{id}/presenti(id=${assemblea.getId()})}">
+    <button class="btn btn-sm ml-1">Elenco partecipanti</button>
+  </a>
+  <th:block th:if="${canTogglePresenza}">
+    <a th:href="@{/assemblea/{id}/presenza(id=${assemblea.getId()})}"
+       th:unless="${hasDelega}"
+       class="ml-1">
+      <button class="btn btn-success btn-sm" th:if="${!isPresente}">Registrati come presente</button>
+      <button class="btn btn-warning btn-sm" th:if="${isPresente}">Esci dall'assemblea</button>
+    </a>
+  </th:block>
+</div>
+</th:block>

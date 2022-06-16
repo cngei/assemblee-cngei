@@ -1,0 +1,48 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base.html}">
+<p th:include="fragments/base.html :: page">
+<div layout:fragment="content">
+    <div class="grid grid-flow-column gap-4 grid-cols-1 lg:grid-cols-2">
+        <h2 class="text-xl">Mozioni ed emendamenti</h2>
+        <div th:if="${!readOnly}" class="flex sm:justify-end justify-between">
+            <a th:if="${!readOnly}"
+               th:href="@{/assemblea/{id}/mozioni/crea(id=${idAssemblea})}">
+                <button class="btn btn-primary btn-sm">Crea nuovo</button>
+            </a>
+        </div>
+    </div>
+    <div class="grid grid-flow-column gap-4 grid-cols-1">
+        <div th:if="${mozioni.isEmpty()}">
+            <p>Non sono presenti mozioni o emendamenti.</p>
+        </div>
+        <div class="card bg-base-100 shadow-xl pb-2 h-100" th:if="${!mozioni.isEmpty()}" th:each="mozione : ${mozioni}">
+            <div class="card-body">
+                <h2 class="card-title" th:text="${mozione.getTitolo()}"></h2>
+                <div class="collapse">
+                    <input type="checkbox" />
+                    <div class="collapse-title text-md font-medium">
+                        Clicca per leggere/nascondere il testo
+                    </div>
+                    <div class="collapse-content">
+                        <p th:text="${mozione.getTesto()}"></p>
+                        <strong>Firmatari</strong>
+                        <p>
+                            <span th:each="firmatario : ${mozione.getFirmatari()}" th:text="${firmatario + ', '}"></span>
+                        </p>
+                    </div>
+                    <div class="card-actions justify-end">
+                        <a th:if="${!readOnly && !mozione.isFirmatario() && mozione.getFirmatari().size < 10}"
+                           th:href="@{/assemblea/{idAssemblea}/mozioni/{idMozione}(idAssemblea=${idAssemblea},idMozione=${mozione.getId()})}">
+                            <button class="btn btn-primary">Firma</button>
+                        </a>
+                        <a th:if="${isAdmin && mozione.getFirmatari().size >= 10}"
+                           th:href="@{/assemblea/{idAssemblea}/mozioni/{idMozione}/converti(idAssemblea=${idAssemblea},idMozione=${mozione.getId()})}">
+                            <button class="btn btn-primary">Converti in votazione</button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</html>

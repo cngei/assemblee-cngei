@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<th:block th:fragment="odgActions">
+  <div class="grid grid-flow-col-dense max-w-lg gap-2">
+    <a th:if="${isProprietario && assemblea.getStepOdg() < assemblea.getOdg().length - 1 && assemblea.isInCorso()}"
+       th:href="@{/assemblea/{id}/avanza-odg(id=${assemblea.getId()})}">
+      <button class="btn btn-primary btn-sm">Prossimo punto</button>
+    </a>
+    <a th:if="${isProprietario && assemblea.getFine() == null}"
+       th:href="@{/assemblea/{id}/odg(id=${assemblea.getId()})}">
+      <button class="btn btn-sm">Modifica OdG</button>
+    </a>
+    <a th:if="${isProprietario && !assemblea.isMozioniOpen() && assemblea.getFine() == null}"
+       th:href="@{/assemblea/{id}/mozioni/start(id=${assemblea.getId()})}">
+      <button class="btn btn-error btn-sm">Apri mozioni</button>
+    </a>
+    <a th:if="${isProprietario && assemblea.isMozioniOpen()}"
+       th:href="@{/assemblea/{id}/mozioni/stop(id=${assemblea.getId()})}">
+      <button class="btn btn-error btn-sm">Chiudi mozioni</button>
+    </a>
+    <a th:href="@{/assemblea/{id}/termina(id=${assemblea.getId()})}" th:if="${canStop}">
+      <button class="btn btn-error btn-sm"
+              onclick="return window.confirm('Questa operazione non può essere annullata, confermi?')">
+        Termina assemblea
+      </button>
+    </a>
+  </div>
+</th:block>

@@ -3,6 +3,7 @@
 <th:block th:include="fragments/base.html :: page">
     <div layout:fragment="content">
         <h2 class="text-xl" th:text="${votazione.getQuesito()}"></h2>
+        <p th:if="${votazione.getDescrizione() != null}" th:text="${votazione.getDescrizione()}" style="white-space: pre-line"></p>
         <table class="table w-full mt-2">
             <thead>
             <tr>

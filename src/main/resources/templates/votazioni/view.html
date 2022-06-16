@@ -45,6 +45,7 @@
 <th:block th:include="fragments/base.html :: page">
     <div layout:fragment="content">
         <h2 class="text-xl" th:text="${votazione.getQuesito()}"></h2>
+        <p th:if="${votazione.getDescrizione() != null}" th:text="${votazione.getDescrizione()}" style="white-space: pre-line;"></p>
         <form th:object="${votoModel}" method="post" data-selected-proprio="0" data-selected-delega="0"
               th:data-max-selected="${votazione.getNumeroScelte()}">
             <input type="hidden" th:value="${idProprio}" th:field="*{idProprio}"></input>

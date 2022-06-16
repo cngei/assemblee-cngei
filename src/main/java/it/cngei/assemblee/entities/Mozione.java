@@ -1,7 +1,7 @@
 package it.cngei.assemblee.entities;
 
+import com.vladmihalcea.hibernate.type.array.LongArrayType;
 import com.vladmihalcea.hibernate.type.array.StringArrayType;
-import it.cngei.assemblee.enums.TipoVotazione;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,38 +11,30 @@ import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
 import javax.persistence.*;
-import java.util.List;
+import java.time.LocalDateTime;
 
 @Data
+@Table
 @Builder
 @Entity
-@Table
 @NoArgsConstructor
 @AllArgsConstructor
 @TypeDefs({
     @TypeDef(
-        name = "string-array",
-        typeClass = StringArrayType.class
+        name = "long-array",
+        typeClass = LongArrayType.class
     )
 })
-public class Votazione {
+public class Mozione {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
-
   private Long idAssemblea;
-  private TipoVotazione tipoVotazione;
-  private boolean terminata;
-  private Long numeroScelte;
-  private Long presenti;
+  private String titolo;
+  @Column(name = "testo", columnDefinition = "text")
+  private String testo;
 
-  private String quesito;
-  private String descrizione;
-
-  @OneToMany(mappedBy = "idVotazione")
-  private List<Voto> voti;
-
-  @Column(name = "scelte", columnDefinition = "varchar[]")
-  @Type(type = "string-array")
-  private String[] scelte;
+  @Column(name = "firmatari", columnDefinition = "bigint[]")
+  @Type(type = "long-array")
+  private Long[] firmatari;
 }

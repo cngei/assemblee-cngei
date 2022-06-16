@@ -5,10 +5,9 @@ spring:
     password: password
     url: jdbc:postgresql://localhost:5432/postgres
   jpa:
-    hibernate:
-      ddl-auto: update
-    generate-ddl: true
-    defer-datasource-initialization: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  devtools:
+    add-properties: false
 keycloak:
   auth-server-url: https://auth.cngei.it/auth
   realm: cngei
@@ -20,3 +19,7 @@ keycloak:
     - security-collections:
         - patterns:
             - /**
+server:
+  error:
+    include-exception: true
+    include-stacktrace: always

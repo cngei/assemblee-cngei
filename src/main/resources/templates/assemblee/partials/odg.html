@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<th:block th:fragment="odg">
+    <div th:if="${assemblea.getOdg().length == 0}">
+        <p>Non &egrave; ancora disponibile l'ordine del giorno.</p>
+    </div>
+    <ul class="steps steps-vertical w-full" th:if="${assemblea.getOdg().length > 0}">
+        <li class="step" th:classappend="${iStat.index <= assemblea.getStepOdg()} ? 'step-primary' : ''"
+            th:each="punto, iStat : ${assemblea.getOdg()}">
+            <div class="flex justify-between items-center w-full text-left">
+                <span th:text="${punto}"></span>
+                <th:block th:if="${isProprietario && assemblea.isInCorso() && iStat.index == assemblea.getStepOdg()}">
+                    <a th:href="@{/assemblea/{id}/votazione/crea(id=${assemblea.getId()})}">
+                        <button class="btn btn-success btn-sm">Crea votazione</button>
+                    </a>
+                </th:block>
+            </div>
+        </li>
+    </ul>
+</th:block>

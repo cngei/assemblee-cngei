@@ -11,7 +11,7 @@
                         <p class="italic" th:if="${assemblea.isInCorso()}">(in corso)</p>
                         <p th:text="${assemblea.getDescrizione()}"></p>
                         <p th:if="${assemblea.getConvocazione() != null}"
-                           th:text="${'Convocata per: ' + #temporals.format(assemblea.getConvocazione(), 'dd-MM-yy HH:MM')}"></p>
+                           th:text="${'Convocata per: ' + #temporals.format(assemblea.getConvocazione(), 'dd-MM-yy HH:mm')}"></p>
                         <p th:if="${assemblea.getFine() != null}">Assemblea terminata</p>
                         <div class="card-actions justify-end">
                             <a th:href="@{/assemblea/{id}(id=${assemblea.getId()})}">

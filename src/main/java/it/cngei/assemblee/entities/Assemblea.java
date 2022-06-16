@@ -12,6 +12,7 @@ import org.hibernate.annotations.TypeDefs;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Table
@@ -43,6 +44,12 @@ public class Assemblea {
   private boolean inCorso;
   private Long stepOdg;
   private boolean require2FA;
+  private boolean isNazionale;
+  private boolean isMozioniOpen;
+
+  @Column(name = "covepo", columnDefinition = "bigint[]")
+  @Type(type = "long-array")
+  private Long[] covepo;
 
   @Column(name = "partecipanti", columnDefinition = "bigint[]")
   @Type(type = "long-array")
@@ -51,4 +58,7 @@ public class Assemblea {
   @Column(name = "odg", columnDefinition = "varchar[]")
   @Type(type = "string-array")
   private String[] odg;
+
+  @OneToMany(mappedBy = "idAssemblea")
+  private List<Mozione> mozioni;
 }

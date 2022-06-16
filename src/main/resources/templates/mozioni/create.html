@@ -1,0 +1,36 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base.html}">
+<th:block th:include="fragments/base.html :: page">
+    <div layout:fragment="content">
+        <h2 class="text-xl">Nuova mozione/emendamento</h2>
+        <form th:object="${mozione}" method="post">
+            <div class="form-control w-full max-w-md">
+                <label class="label">
+                    <span class="label-text">Titolo</span>
+                </label>
+                <input
+                        type="text"
+                        placeholder="e.g.: Triplichiamo la quota associativa"
+                        class="input input-bordered w-full"
+                        required
+                        oninvalid="this.setCustomValidity('Il titolo è obbligatorio')"
+                        oninput="this.setCustomValidity('')"
+                        th:field="*{titolo}"
+                ></input>
+            </div>
+            <div class="form-control w-full max-w-md">
+                <label class="label">
+                    <span class="label-text">Testo</span>
+                </label>
+                <textarea
+                        placeholder="Testo della mozione"
+                        class="textarea textarea-bordered"
+                        th:field="*{testo}"
+                ></textarea>
+            </div>
+            <button class="btn btn-primary mt-2">Crea</button>
+            <a href="/"><button class="btn btn-outline" type="button">Annulla</button></a>
+        </form>
+    </div>
+</th:block>
+</html>

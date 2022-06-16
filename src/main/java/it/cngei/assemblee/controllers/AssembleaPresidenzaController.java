@@ -1,6 +1,7 @@
 package it.cngei.assemblee.controllers;
 
 import it.cngei.assemblee.dtos.MessageModel;
+import it.cngei.assemblee.dtos.NominaCovepoEditModel;
 import it.cngei.assemblee.dtos.NominaPresidenteEditModel;
 import it.cngei.assemblee.dtos.OdgEditModel;
 import it.cngei.assemblee.enums.TipoMessaggio;
@@ -35,6 +36,10 @@ public class AssembleaPresidenzaController {
     return new NominaPresidenteEditModel();
   }
 
+  @ModelAttribute(name = "covepoModel")
+  public NominaCovepoEditModel covepoModel() {
+    return new NominaCovepoEditModel();
+  }
 
   @GetMapping("/{id}/nomina-presidente")
   public String getNominaPresidente(@PathVariable("id") Long id, Model model) {
@@ -48,7 +53,7 @@ public class AssembleaPresidenzaController {
   }
 
   @PostMapping("/{id}/nomina-presidente")
-  public String getNominaPresidente(@PathVariable("id") Long id, NominaPresidenteEditModel presidenteEditModel) {
+  public String nominaPresidente(@PathVariable("id") Long id, NominaPresidenteEditModel presidenteEditModel) {
     var maybeAssemblea = assembleeRepository.findById(id);
     if(maybeAssemblea.isEmpty()) {
       return "redirect:/";
@@ -60,6 +65,29 @@ public class AssembleaPresidenzaController {
     return "redirect:/assemblea/" + id;
   }
 
+  @GetMapping("/{id}/nomina-covepo")
+  public String getNominaCovepo(@PathVariable("id") Long id, Model model) {
+    var maybeAssemblea = assembleeRepository.findById(id);
+    if(maybeAssemblea.isEmpty()) {
+      return "redirect:/";
+    }
+    var assemblea = maybeAssemblea.get();
+    model.addAttribute("assemblea", assemblea);
+    return "assemblee/nominaCovepo";
+  }
+
+  @PostMapping("/{id}/nomina-covepo")
+  public String nominaCovepo(@PathVariable("id") Long id, NominaCovepoEditModel nominaCovepoEditModel) {
+    var maybeAssemblea = assembleeRepository.findById(id);
+    if(maybeAssemblea.isEmpty()) {
+      return "redirect:/";
+    }
+    var assemblea = maybeAssemblea.get();
+    // FIXME: controllare che i membri della CoVePo siano tra i partecipanti
+    assemblea.setCovepo(nominaCovepoEditModel.getTessere());
+    assembleeRepository.save(assemblea);
+    return "redirect:/assemblea/" + id;
+  }
 
   @GetMapping("/{id}/odg")
   public String getEditOdg(@PathVariable("id") Long id, Model model) {
@@ -134,6 +162,22 @@ public class AssembleaPresidenzaController {
       assemblea.setFine(LocalDateTime.now());
       assembleeRepository.save(assemblea);
       messageController.send(MessageModel.builder().idAssemblea(id).tipoMessaggio(TipoMessaggio.FINE).build());
+    }
+    return "redirect:/assemblea/" + id;
+  }
+
+  @GetMapping("/{id}/toggle-mozioni")
+  public String toggleMozioni(@PathVariable("id") Long id, Principal principal) {
+    var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
+    var maybeAssemblea = assembleeRepository.findById(id);
+    if(maybeAssemblea.isEmpty()) {
+      return "redirect:/";
+    }
+    var assemblea = maybeAssemblea.get();
+    if (assemblea.getFine() == null && Utils.isAdmin(assemblea, idUtente)) {
+      assemblea.setMozioniOpen(!assemblea.isMozioniOpen());
+      assembleeRepository.save(assemblea);
+      messageController.send(MessageModel.builder().idAssemblea(id).tipoMessaggio(TipoMessaggio.INIZIO).build());
     }
     return "redirect:/assemblea/" + id;
   }
