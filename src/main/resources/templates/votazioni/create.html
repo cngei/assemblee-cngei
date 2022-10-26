@@ -18,6 +18,15 @@
             </div>
             <div class="form-control w-full max-w-md">
                 <label class="label">
+                    <span class="label-text">Descrizione lunga (opzionale)</span>
+                </label>
+                <textarea
+                        class="textarea textarea-bordered"
+                        th:field="*{descrizione}"
+                ></textarea>
+            </div>
+            <div class="form-control w-full max-w-md">
+                <label class="label">
                     <span class="label-text">Max. scelte possibili</span>
                 </label>
                 <input
@@ -37,6 +46,17 @@
                         th:field="*{scelte}"
                         required
                 ></textarea>
+            </div>
+            <div class="form-control w-full max-w-md">
+                <label class="label">
+                    <span class="label-text">Maggioranza richiesta in percentuale (solo per votazioni con due opzioni)</span>
+                </label>
+                <input
+                        type="text"
+                        class="input input-bordered w-full"
+                        required
+                        th:field="*{quorum}"
+                ></input>
             </div>
             <div class="form-control max-w-md">
                 <label class="label cursor-pointer">

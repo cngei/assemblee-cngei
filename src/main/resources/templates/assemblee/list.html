@@ -2,29 +2,45 @@
 <html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base.html}">
 <th:block th:include="fragments/base.html :: page">
     <div layout:fragment="content">
-        <div th:if="${assemblee.size() > 0}">
+        <div th:if="${assemblee != null && assemblee.size() > 0}">
             <h2 class="text-xl">Elenco assemblee disponibili:</h2>
             <div class="grid grid-flow-column gap-4 grid-cols-1 md:grid-cols-2">
                 <div class="card bg-base-100 shadow-xl pb-2 h-100" th:each="assemblea : ${assemblee}">
                     <div class="card-body">
                         <h2 class="card-title" th:text="${assemblea.getNome()}"></h2>
                         <p class="italic" th:if="${assemblea.isInCorso()}">(in corso)</p>
-                        <p th:text="${assemblea.getDescrizione()}"></p>
+                        <p th:utext="${assemblea.getDescrizione()}"></p>
                         <p th:if="${assemblea.getConvocazione() != null}"
                            th:text="${'Convocata per: ' + #temporals.format(assemblea.getConvocazione(), 'dd-MM-yy HH:mm')}"></p>
-                        <p th:if="${assemblea.getFine() != null}">Assemblea terminata</p>
                         <div class="card-actions justify-end">
                             <a th:href="@{/assemblea/{id}(id=${assemblea.getId()})}">
-                                <button th:if="${assemblea.getFine() == null}" class="btn btn-primary">Entra</button>
-                                <button th:if="${assemblea.getFine() != null}" class="btn">Entra</button>
+                                <button class="btn btn-primary">Entra</button>
                             </a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div th:if="${assemblee.size() == 0}">
-            <h3 class="text-l">Nessuna assemblea disponibile al momento</h3>
+        <div th:if="${assemblee == null ||assemblee.size() == 0}">
+            <h3 class="text-xl">Nessuna nuova assemblea disponibile</h3>
+        </div>
+        <div th:if="${oldAssemblee != null && oldAssemblee.size() > 0}" class="mt-2">
+            <h2 class="text-xl">Assemblee passate:</h2>
+            <div class="grid grid-flow-column gap-4 grid-cols-1 md:grid-cols-2">
+                <div class="card bg-base-100 shadow-xl pb-2 h-100" th:each="assemblea : ${oldAssemblee}">
+                    <div class="card-body">
+                        <h2 class="card-title" th:text="${assemblea.getNome()}"></h2>
+                        <p th:text="${assemblea.getDescrizione()}"></p>
+                        <p th:if="${assemblea.getConvocazione() != null}"
+                           th:text="${'Convocata per: ' + #temporals.format(assemblea.getConvocazione(), 'dd-MM-yy HH:mm')}"></p>
+                        <div class="card-actions justify-end">
+                            <a th:href="@{/assemblea/{id}(id=${assemblea.getId()})}">
+                                <button th:if="${assemblea.getFine() != null}" class="btn">Entra</button>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <a href="/assemblea/crea">
             <button class="btn mt-8">Crea assemblea</button>

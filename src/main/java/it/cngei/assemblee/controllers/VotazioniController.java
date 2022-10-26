@@ -10,11 +10,14 @@ import it.cngei.assemblee.repositories.AssembleeRepository;
 import it.cngei.assemblee.repositories.SocioRepository;
 import it.cngei.assemblee.repositories.VotazioneRepository;
 import it.cngei.assemblee.repositories.VotiRepository;
+import it.cngei.assemblee.services.AssembleaService;
 import it.cngei.assemblee.state.AssembleaState;
+import it.cngei.assemblee.utils.Utils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -29,14 +32,16 @@ public class VotazioniController {
   private final SocioRepository socioRepository;
   private final AssembleaState assembleaState;
   private final MessageController messageController;
+  private final AssembleaService assembleaService;
 
-  public VotazioniController(AssembleeRepository assembleeRepository, VotazioneRepository votazioneRepository, VotiRepository votiRepository, SocioRepository socioRepository, AssembleaState assembleaState, MessageController messageController) {
+  public VotazioniController(AssembleeRepository assembleeRepository, VotazioneRepository votazioneRepository, VotiRepository votiRepository, SocioRepository socioRepository, AssembleaState assembleaState, MessageController messageController, AssembleaService assembleaService) {
     this.assembleeRepository = assembleeRepository;
     this.votazioneRepository = votazioneRepository;
     this.votiRepository = votiRepository;
     this.socioRepository = socioRepository;
     this.assembleaState = assembleaState;
     this.messageController = messageController;
+    this.assembleaService = assembleaService;
   }
 
   @ModelAttribute(name = "votazioneModel")
@@ -46,30 +51,26 @@ public class VotazioniController {
 
   @GetMapping("/crea")
   public String getVotazioneView(Model model, @PathVariable("id") Long id) {
-    var assemblea = assembleeRepository.findById(id);
-
-    if (assemblea.isEmpty()) {
-      return "redirect:/";
-    } else {
-      model.addAttribute("assemblea", assemblea.get());
-      return "votazioni/create";
-    }
+    var assemblea = assembleaService.getAssemblea(id);
+    model.addAttribute("assemblea", assemblea);
+    return "votazioni/create";
   }
 
   @PostMapping("/crea")
-  public String createVotazione(VotazioneEditModel votazioneModel, @PathVariable("id") Long id) {
-    var assemblea = assembleeRepository.findById(id);
-    if (assemblea.isEmpty()) {
-      return "redirect:/";
-    }
+  public String createVotazione(VotazioneEditModel votazioneModel, @PathVariable("id") Long id, Principal principal) {
+    var idUtente = Utils.getUserIdFromPrincipal(principal);
+    assembleaService.checkIsAdmin(id, idUtente);
     var scelte = Arrays.stream(votazioneModel.getScelte().split("\n")).map(String::trim).filter(x -> !x.isBlank()).collect(Collectors.toList());
     scelte.add("Astenuto");
     var newVotazione = Votazione.builder()
-        .idAssemblea(assemblea.get().getId())
+        .idAssemblea(id)
         .quesito(votazioneModel.getQuesito())
+        .descrizione(votazioneModel.getDescrizione())
         .tipoVotazione(votazioneModel.isVotoPalese() ? TipoVotazione.PALESE : TipoVotazione.SEGRETO)
         .scelte(scelte.toArray(String[]::new))
         .numeroScelte(votazioneModel.getNumeroScelte())
+        .quorum(votazioneModel.getQuorum())
+        .quorumPerOpzione(votazioneModel.getQuorumPerOpzione())
         .terminata(false)
         .build();
     votazioneRepository.save(newVotazione);
@@ -87,7 +88,8 @@ public class VotazioniController {
     var votazione = votazioneRepository.findById(idVotazione);
     var temp = votazione.get(); // TODO: rimuovere questo schifo
     temp.setTerminata(true);
-    temp.setPresenti((long) assembleaState.getPresenti(id).size());
+    Map.Entry<Long, Long> presentiTotali = assembleaService.getPresentiTotali(id);
+    temp.setPresenti(presentiTotali.getKey() + presentiTotali.getValue());
     votazioneRepository.save(temp);
     messageController.send(MessageModel.builder().idAssemblea(id).tipoMessaggio(TipoMessaggio.VOTAZIONE).build());
 
@@ -97,21 +99,31 @@ public class VotazioniController {
   @GetMapping("/{idVotazione}/risultati")
   public String getVotazioneView(Model model, @PathVariable("id") Long id, @PathVariable("idVotazione") Long idVotazione) {
     var assemblea = assembleeRepository.findById(id);
-    var votazione = votazioneRepository.findById(idVotazione);
+    var maybeVotazione = votazioneRepository.findById(idVotazione);
+    var votazione = maybeVotazione.get();
     var voti = votiRepository.findAllByIdVotazione(idVotazione).stream()
         .peek(x -> x.setId(x.getId().split("-")[0])).collect(Collectors.toList());
-    var isPalese = votazione.get().getTipoVotazione() == TipoVotazione.PALESE;
+    var isPalese = votazione.getTipoVotazione() == TipoVotazione.PALESE;
 
-    var inProprio = IntStream.range(0, votazione.get().getScelte().length)
-            .mapToLong(i -> voti.stream().filter(x -> !x.isPerDelega() && Arrays.stream(x.getScelte()).anyMatch(y -> y == i)).count()).toArray();
-    var perDelega = IntStream.range(0, votazione.get().getScelte().length)
+    var inProprio = IntStream.range(0, votazione.getScelte().length)
+        .mapToLong(i -> voti.stream().filter(x -> !x.isPerDelega() && Arrays.stream(x.getScelte()).anyMatch(y -> y == i)).count()).toArray();
+    var perDelega = IntStream.range(0, votazione.getScelte().length)
         .mapToLong(i -> voti.stream().filter(x -> x.isPerDelega() && Arrays.stream(x.getScelte()).anyMatch(y -> y == i)).count()).toArray();
+
+    model.addAttribute("quorumRaggiunto", true);
+    if (votazione.isTerminata() && votazione.getScelte().length == 3) {
+      var maxVoti = IntStream.range(0, votazione.getScelte().length)
+          .mapToLong(i -> voti.stream().filter(x -> Arrays.stream(x.getScelte()).anyMatch(y -> y == i)).count()).max().getAsLong();
+      if ((double) maxVoti / votazione.getPresenti() <= (votazione.getQuorum() / 100)) {
+        model.addAttribute("quorumRaggiunto", false);
+      }
+    }
 
     model.addAllAttributes(Map.of(
         "idAssemblea", id,
-        "votazione", votazione.get(),
+        "votazione", votazione,
         "voti", voti.stream().peek(x -> {
-          if(isPalese) {
+          if (isPalese) {
             x.setId(socioRepository.findById(Long.valueOf(x.getId())).map(Socio::getNome).orElse(x.getId()));
           }
         }).collect(Collectors.toList()),

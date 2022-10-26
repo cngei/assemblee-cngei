@@ -3,6 +3,52 @@
 <th:block th:include="fragments/base.html :: page">
     <div layout:fragment="content">
         <div class="ml-2">
+            <div class="mt-4">
+                <a th:href="${'/assemblea/' + assembleaId}">
+                    <button class="btn btn-outline">Torna all'assemblea</button>
+                </a>
+                <a th:if="${isCovepo}"
+                   th:href="${'/assemblea/' + assembleaId + '/caccia'}">
+                    <button class="btn btn-danger btn-outline mb-1">Segna tutti assenti</button>
+                </a>
+            </div>
+
+            <form th:if="${isCovepo}" th:action="@{/assemblea/{id}/aggiungiPartecipante(id=${assembleaId})}"
+                  method="post">
+                <h4 class="text-xl">Aggiungi partecipante</h4>
+                <div class="flex">
+                    <input
+                            type="text"
+                            placeholder="Tessera"
+                            class="input input-bordered w-full mr-1"
+                            required
+                            th:value="*{tessera}"
+                            name="tessera"
+                    ></input>
+                    <button type="submit" class="btn btn-primary">Aggiungi</button>
+                </div>
+            </form>
+            <form th:if="${isCovepo}" th:action="@{/assemblea/{id}/covepoDelega(id=${assembleaId})}"
+                  method="post">
+                <h4 class="text-xl">Inserisci delega</h4>
+                <div class="flex">
+                    <input
+                            type="text"
+                            placeholder="Tessera di chi delega"
+                            class="input input-bordered w-full mr-1"
+                            required
+                            name="delegante"
+                    ></input>
+                    <input
+                            type="text"
+                            placeholder="Chi riceve la delega"
+                            class="input input-bordered w-full mr-1"
+                            required
+                            name="delegato"
+                    ></input>
+                    <button type="submit" class="btn btn-primary">Aggiungi</button>
+                </div>
+            </form>
             <table class="table table-zebra w-full rounded">
                 <tbody>
                 <tr th:each="partecipante : ${partecipanti}">
@@ -10,24 +56,29 @@
                     <td th:text="${partecipante.getValue()}"></td>
                     <td>
                         <th:block th:if="${deleghe.containsKey(partecipante.getKey())}">
-                            <span>Ha delegato <th:block th:text="${deleghe.get(partecipante.getKey())}"></th:block></span>
+                            <span>Ha delegato <th:block
+                                    th:text="${deleghe.get(partecipante.getKey())}"></th:block></span>
                         </th:block>
                     </td>
                     <td>
+                        <a th:if="${isCovepo && !presenti.contains(partecipante.getKey())}"
+                           th:href="${'/assemblea/' + assembleaId + '/presente/' + partecipante.getKey()}">
+                            <button class="btn btn-outline btn-sm mb-1">Segna presente</button>
+                        </a>
                         <a th:if="${isCovepo && presenti.contains(partecipante.getKey())}"
                            th:href="${'/assemblea/' + assembleaId + '/caccia/' + partecipante.getKey()}">
                             <button class="btn btn-outline btn-sm mb-1">Segna assente</button>
                         </a>
                         <th:block th:if="${!isCovepo && presenti.contains(partecipante.getKey())}">Presente</th:block>
+                        <a th:if="${isCovepo}"
+                           onclick="return window.confirm('Vuoi rimuovere questo partecipante?') ? true : false;"
+                           th:href="${'/assemblea/' + assembleaId + '/rimuoviPartecipante/' + partecipante.getKey()}">
+                            <button class="btn btn-outline btn-error btn-sm mb-1">Rimuovi</button>
+                        </a>
                     </td>
                 </tr>
                 </tbody>
             </table>
-        </div>
-        <div class="mt-4">
-            <a th:href="${'/assemblea/' + assembleaId}">
-                <button class="btn btn-outline">Torna all'assemblea</button>
-            </a>
         </div>
     </div>
 </th:block>

@@ -19,12 +19,12 @@
             <div class="card-body">
                 <h2 class="card-title" th:text="${mozione.getTitolo()}"></h2>
                 <div class="collapse">
-                    <input type="checkbox" />
+                    <input type="checkbox"></input>
                     <div class="collapse-title text-md font-medium">
                         Clicca per leggere/nascondere il testo
                     </div>
                     <div class="collapse-content">
-                        <p th:text="${mozione.getTesto()}"></p>
+                        <p th:text="${mozione.getTesto()}" style="white-space: pre-line"></p>
                         <strong>Firmatari</strong>
                         <p>
                             <span th:each="firmatario : ${mozione.getFirmatari()}" th:text="${firmatario + ', '}"></span>

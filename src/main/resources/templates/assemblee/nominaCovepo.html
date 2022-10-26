@@ -11,9 +11,9 @@
                     required>
                 <option disabled selected th:value="null">Seleziona i membri della CoVePo</option>
                 <option
-                        th:each="partecipante : ${assemblea.getPartecipanti()}"
-                        th:value="${partecipante}"
-                        th:text="${partecipante}">
+                        th:each="partecipante : ${partecipanti}"
+                        th:value="${partecipante.getId()}"
+                        th:text="${partecipante.getId()} + ' ' + ${partecipante.getNome()}">
                 </option>
             </select>
             <button class="btn btn-primary">Nomina</button>

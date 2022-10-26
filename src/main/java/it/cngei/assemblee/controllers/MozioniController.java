@@ -40,7 +40,7 @@ public class MozioniController {
     model.addAttribute("idAssemblea", idAssemblea);
     model.addAttribute("mozioni", mozioni.stream().map(x -> new MozioneViewModel(x, idUtente, id -> socioRepository.findById(id).map(s -> s.getNome() + " - " + s.getSezione()).orElse(id.toString()))).collect(Collectors.toList()));
     model.addAttribute("me", idUtente);
-    model.addAttribute("readOnly", !assemblea.isMozioniOpen());
+    model.addAttribute("readOnly", !assemblea.isMozioniOpen() || Utils.isOsservatore(assemblea, idUtente));
     model.addAttribute("isAdmin", Utils.isAdmin(assemblea, idUtente));
     return "mozioni/list";
   }

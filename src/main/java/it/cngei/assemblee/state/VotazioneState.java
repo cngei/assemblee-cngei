@@ -1,8 +1,10 @@
 package it.cngei.assemblee.state;
 
+import org.springframework.data.redis.core.SetOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.ApplicationScope;
 
+import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -12,20 +14,14 @@ import java.util.concurrent.ConcurrentHashMap;
 @ApplicationScope
 @Component
 public class VotazioneState {
-  private final Map<Long, Set<Long>> votanti = new ConcurrentHashMap<>();
+  @Resource(name = "votiTemplate")
+  private SetOperations<Long, Long> voti;
 
   public void setVotante(Long idVotazione, Long idPartecipante) {
-    if(!votanti.containsKey(idVotazione)) {
-      votanti.put(idVotazione, Collections.synchronizedSet(new HashSet<>()));
-    }
-
-    votanti.get(idVotazione).add(idPartecipante);
+    voti.add(idVotazione, idPartecipante);
   }
 
   public Set<Long> getVotanti(Long idVotazione) {
-    if(!votanti.containsKey(idVotazione)) {
-      votanti.put(idVotazione, Collections.synchronizedSet(new HashSet<>()));
-    }
-    return votanti.get(idVotazione);
+    return voti.members(idVotazione);
   }
 }

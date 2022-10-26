@@ -6,6 +6,8 @@ import it.cngei.assemblee.dtos.NominaPresidenteEditModel;
 import it.cngei.assemblee.dtos.OdgEditModel;
 import it.cngei.assemblee.enums.TipoMessaggio;
 import it.cngei.assemblee.repositories.AssembleeRepository;
+import it.cngei.assemblee.repositories.SocioRepository;
+import it.cngei.assemblee.services.AssembleaService;
 import it.cngei.assemblee.utils.Utils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,10 +21,14 @@ import java.util.Arrays;
 @RequestMapping("/assemblea")
 public class AssembleaPresidenzaController {
   private final AssembleeRepository assembleeRepository;
+  private final SocioRepository socioRepository;
+  private final AssembleaService assembleaService;
   private final MessageController messageController;
 
-  public AssembleaPresidenzaController(AssembleeRepository assembleeRepository, MessageController messageController) {
+  public AssembleaPresidenzaController(AssembleeRepository assembleeRepository, SocioRepository socioRepository, AssembleaService assembleaService, MessageController messageController) {
     this.assembleeRepository = assembleeRepository;
+    this.socioRepository = socioRepository;
+    this.assembleaService = assembleaService;
     this.messageController = messageController;
   }
 
@@ -42,23 +48,24 @@ public class AssembleaPresidenzaController {
   }
 
   @GetMapping("/{id}/nomina-presidente")
-  public String getNominaPresidente(@PathVariable("id") Long id, Model model) {
-    var maybeAssemblea = assembleeRepository.findById(id);
-    if(maybeAssemblea.isEmpty()) {
-      return "redirect:/";
-    }
-    var assemblea = maybeAssemblea.get();
+  public String getNominaPresidente(@PathVariable("id") Long id, Model model, Principal principal) {
+    var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
+    var assemblea = assembleaService.getAssemblea(id);
+    assembleaService.checkIsAdmin(id, idUtente);
+
+    var partecipanti = socioRepository.findAllById(Arrays.asList(assemblea.getPartecipanti()));
+
+    model.addAttribute("partecipanti", partecipanti);
     model.addAttribute("assemblea", assemblea);
     return "assemblee/nominaPresidente";
   }
 
   @PostMapping("/{id}/nomina-presidente")
-  public String nominaPresidente(@PathVariable("id") Long id, NominaPresidenteEditModel presidenteEditModel) {
-    var maybeAssemblea = assembleeRepository.findById(id);
-    if(maybeAssemblea.isEmpty()) {
-      return "redirect:/";
-    }
-    var assemblea = maybeAssemblea.get();
+  public String nominaPresidente(@PathVariable("id") Long id, NominaPresidenteEditModel presidenteEditModel, Principal principal) {
+    var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
+    var assemblea = assembleaService.getAssemblea(id);
+    assembleaService.checkIsAdmin(id, idUtente);
+
     // FIXME: controllare che il presidente sia tra i partecipanti
     assemblea.setIdPresidente(presidenteEditModel.getTessera());
     assembleeRepository.save(assemblea);
@@ -66,23 +73,24 @@ public class AssembleaPresidenzaController {
   }
 
   @GetMapping("/{id}/nomina-covepo")
-  public String getNominaCovepo(@PathVariable("id") Long id, Model model) {
-    var maybeAssemblea = assembleeRepository.findById(id);
-    if(maybeAssemblea.isEmpty()) {
-      return "redirect:/";
-    }
-    var assemblea = maybeAssemblea.get();
+  public String getNominaCovepo(@PathVariable("id") Long id, Model model, Principal principal) {
+    var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
+    var assemblea = assembleaService.getAssemblea(id);
+    assembleaService.checkIsAdmin(id, idUtente);
+
+    var partecipanti = socioRepository.findAllById(Arrays.asList(assemblea.getPartecipanti()));
+
+    model.addAttribute("partecipanti", partecipanti);
     model.addAttribute("assemblea", assemblea);
     return "assemblee/nominaCovepo";
   }
 
   @PostMapping("/{id}/nomina-covepo")
-  public String nominaCovepo(@PathVariable("id") Long id, NominaCovepoEditModel nominaCovepoEditModel) {
-    var maybeAssemblea = assembleeRepository.findById(id);
-    if(maybeAssemblea.isEmpty()) {
-      return "redirect:/";
-    }
-    var assemblea = maybeAssemblea.get();
+  public String nominaCovepo(@PathVariable("id") Long id, NominaCovepoEditModel nominaCovepoEditModel, Principal principal) {
+    var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
+    var assemblea = assembleaService.getAssemblea(id);
+    assembleaService.checkIsAdmin(id, idUtente);
+
     // FIXME: controllare che i membri della CoVePo siano tra i partecipanti
     assemblea.setCovepo(nominaCovepoEditModel.getTessere());
     assembleeRepository.save(assemblea);
@@ -103,11 +111,8 @@ public class AssembleaPresidenzaController {
 
   @PostMapping("/{id}/odg")
   public String updateOdg(@PathVariable("id") Long id, OdgEditModel odgEditModel) {
-    var maybeAssemblea = assembleeRepository.findById(id);
-    if(maybeAssemblea.isEmpty()) {
-      return "redirect:/";
-    }
-    var assemblea = maybeAssemblea.get();
+    var assemblea = assembleaService.getAssemblea(id);
+
     assemblea.setOdg(Arrays.stream(odgEditModel.getOdg().split("\n"))
         .filter(x -> !x.isBlank())
         .map(String::trim)
@@ -120,15 +125,14 @@ public class AssembleaPresidenzaController {
   }
 
   @GetMapping("/{id}/avanza-odg")
-  public String updateOdg(@PathVariable("id") Long id) {
-    var maybeAssemblea = assembleeRepository.findById(id);
-    if(maybeAssemblea.isEmpty()) {
-      return "redirect:/";
-    }
-    var assemblea = maybeAssemblea.get();
-    assemblea.setStepOdg(assemblea.getStepOdg() + 1);
-    assembleeRepository.save(assemblea);
-    messageController.send(MessageModel.builder().idAssemblea(id).tipoMessaggio(TipoMessaggio.STEP_ODG).build());
+  public String nextOdg(@PathVariable("id") Long id) {
+    assembleaService.nextOdg(id);
+    return "redirect:/assemblea/" + id;
+  }
+
+  @GetMapping("/{id}/indietro-odg")
+  public String previousOdg(@PathVariable("id") Long id) {
+    assembleaService.previousOdg(id);
 
     return "redirect:/assemblea/" + id;
   }
@@ -152,12 +156,10 @@ public class AssembleaPresidenzaController {
   @GetMapping("/{id}/termina")
   public String stopAssemblea(@PathVariable("id") Long id, Principal principal) {
     var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
-    var maybeAssemblea = assembleeRepository.findById(id);
-    if(maybeAssemblea.isEmpty()) {
-      return "redirect:/";
-    }
-    var assemblea = maybeAssemblea.get();
-    if (assemblea.isInCorso() && (assemblea.getIdProprietario() == idUtente || assemblea.getIdPresidente() == idUtente)) {
+    var assemblea = assembleaService.getAssemblea(id);
+    assembleaService.checkIsAdmin(id, idUtente);
+
+    if (assemblea.isInCorso()) {
       assemblea.setInCorso(false);
       assemblea.setFine(LocalDateTime.now());
       assembleeRepository.save(assemblea);
@@ -169,16 +171,15 @@ public class AssembleaPresidenzaController {
   @GetMapping("/{id}/toggle-mozioni")
   public String toggleMozioni(@PathVariable("id") Long id, Principal principal) {
     var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
-    var maybeAssemblea = assembleeRepository.findById(id);
-    if(maybeAssemblea.isEmpty()) {
-      return "redirect:/";
-    }
-    var assemblea = maybeAssemblea.get();
-    if (assemblea.getFine() == null && Utils.isAdmin(assemblea, idUtente)) {
+    var assemblea = assembleaService.getAssemblea(id);
+    assembleaService.checkIsAdmin(id, idUtente);
+
+    if (assemblea.getFine() == null) {
       assemblea.setMozioniOpen(!assemblea.isMozioniOpen());
       assembleeRepository.save(assemblea);
       messageController.send(MessageModel.builder().idAssemblea(id).tipoMessaggio(TipoMessaggio.INIZIO).build());
     }
+
     return "redirect:/assemblea/" + id;
   }
 }

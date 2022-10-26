@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <th:block th:fragment="mozioni">
-    <div class="flex justify-between pt-1">
+    <div class="flex justify-between pt-1" th:if="${assemblea.isMozioniOpen() || assemblea.mozioni.size() > 0}">
         <p>Sono presenti <strong th:text="${assemblea.mozioni.size()}"></strong> mozioni/emendamenti</p>
         <a th:href="@{/assemblea/{id}/mozioni(id=${assemblea.getId()})}">
             <button class="btn btn-sm">Visualizza/Crea mozioni</button>

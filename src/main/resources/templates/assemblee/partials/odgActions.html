@@ -5,6 +5,10 @@
        th:href="@{/assemblea/{id}/avanza-odg(id=${assemblea.getId()})}">
       <button class="btn btn-primary btn-sm">Prossimo punto</button>
     </a>
+    <a th:if="${isProprietario && assemblea.getStepOdg() > 0 && assemblea.isInCorso()}"
+       th:href="@{/assemblea/{id}/indietro-odg(id=${assemblea.getId()})}">
+      <button class="btn btn-sm">Punto precedente</button>
+    </a>
     <a th:if="${isProprietario && assemblea.getFine() == null}"
        th:href="@{/assemblea/{id}/odg(id=${assemblea.getId()})}">
       <button class="btn btn-sm">Modifica OdG</button>

@@ -11,4 +11,5 @@ public class AssembleaEditModel {
   private String odg;
   private boolean require2fa;
   private boolean nazionale;
+  private boolean inPresenza;
 }

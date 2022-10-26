@@ -46,6 +46,8 @@ public class Assemblea {
   private boolean require2FA;
   private boolean isNazionale;
   private boolean isMozioniOpen;
+  private Long totaleDelegati;
+  private boolean isInPresenza;
 
   @Column(name = "covepo", columnDefinition = "bigint[]")
   @Type(type = "long-array")

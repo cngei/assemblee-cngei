@@ -6,12 +6,19 @@
         <h2 class="text-xl" th:text="${assemblea.getNome()}"></h2>
         <th:block th:insert="assemblee/partials/header.html :: header" />
     </div>
+    <div th:if="${!isDelegato}">
+        <p>Hai accesso come <strong>osservatore</strong>.</p>
+    </div>
+    <div th:if="${isDelegato}">
+        <p>Hai accesso come <strong>delegato</strong>.</p>
+        <p th:if="${ownsDelega}">Hai una delega.</p>
+    </div>
     <a th:href="@{/assemblea/{id}/inizia(id=${assemblea.getId()})}">
         <button class="btn btn-success"
                 th:if="${isProprietario && !assemblea.isInCorso() && assemblea.getFine() == null}">Inizia assemblea
         </button>
     </a>
-    <div th:if="${assemblea.getCovepo() == null || assemblea.getCovepo().length == 0 && (isProprietario || isPresidente)}"
+    <div th:if="${(assemblea.getCovepo() == null || assemblea.getCovepo().length == 0) && isProprietario}"
          class="flex mt-2 items-center justify-between">
         <p>Non è ancora stata nominata la commissione verifica poteri</p>
         <a th:href="@{/assemblea/{id}/nomina-covepo(id=${assemblea.getId()})}" class="ml-1">
@@ -27,17 +34,22 @@
     </div>
     <th:block th:insert="assemblee/partials/votazioni.html :: votazioni" />
     <th:block th:insert="assemblee/partials/mozioni.html :: mozioni" />
+    <p th:utext="${assemblea.getDescrizione()}"></p>
     <th:block th:insert="assemblee/partials/odg.html :: odg" />
     <th:block th:if="${assemblea.isInCorso()}">
         <div class="flex mt-2 items-center justify-between w-full my-4">
-            <p>Sono presenti <strong th:text="${presenti.size()}"></strong> aventi diritto su <span
+            <p>Sono presenti <strong th:text="${presentiTotali.getKey() + presentiTotali.getValue()}"></strong> aventi diritto su <span
                     th:text="${assemblea.getPartecipanti().length}"></span></p>
+            <p><strong th:text="${presentiTotali.getKey()}"></strong> in proprio - <strong th:text="${presentiTotali.getValue()}"></strong> per delega</p>
             <a th:if="${presenti.size() > 0}" th:href="@{/assemblea/{id}/presenti(id=${assemblea.getId()})}"
                class="ml-1">
                 <button class="btn btn-sm">Vedi presenti</button>
             </a>
         </div>
     </th:block>
+    <div th:if="${assemblea.totaleDelegati != null}">
+        <p>Il numero massimo di aventi diritto per questa assemblea &egrave; <strong th:text="${assemblea.totaleDelegati}"></strong></p>
+    </div>
     <th:block th:insert="assemblee/partials/odgActions.html :: odgActions" />
 </div>
 </html>

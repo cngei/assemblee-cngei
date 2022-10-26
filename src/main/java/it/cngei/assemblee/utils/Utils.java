@@ -29,7 +29,7 @@ public class Utils {
   }
 
   public static boolean isCovepo(Assemblea assemblea, Long user) {
-    return Objects.equals(assemblea.getIdPresidente(), user) || Objects.equals(assemblea.getIdProprietario(), user) || Arrays.asList(assemblea.getCovepo()).contains(user);
+    return Objects.equals(assemblea.getIdPresidente(), user) || Objects.equals(assemblea.getIdProprietario(), user) || (assemblea.getCovepo() != null && Arrays.asList(assemblea.getCovepo()).contains(user));
   }
 
   public static boolean isAdmin(Optional<Assemblea> assemblea, Long user) {
@@ -39,5 +39,9 @@ public class Utils {
 
   public static boolean isAdmin(Assemblea assemblea, Long user) {
     return Objects.equals(assemblea.getIdPresidente(), user) || Objects.equals(assemblea.getIdProprietario(), user);
+  }
+
+  public static boolean isOsservatore(Assemblea assemblea, Long user) {
+    return !Arrays.asList(assemblea.getPartecipanti()).contains(user);
   }
 }

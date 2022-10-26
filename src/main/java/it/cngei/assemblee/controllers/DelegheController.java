@@ -6,8 +6,10 @@ import it.cngei.assemblee.entities.Socio;
 import it.cngei.assemblee.repositories.AssembleeRepository;
 import it.cngei.assemblee.repositories.DelegheRepository;
 import it.cngei.assemblee.repositories.SocioRepository;
+import it.cngei.assemblee.services.AssembleaService;
 import it.cngei.assemblee.state.AssembleaState;
 import it.cngei.assemblee.utils.Utils;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -24,12 +26,14 @@ public class DelegheController {
   private final DelegheRepository delegheRepository;
   private final SocioRepository socioRepository;
   private final AssembleaState assembleaState;
+  private final AssembleaService assembleaService;
 
-  public DelegheController(AssembleeRepository assembleeRepository, DelegheRepository delegheRepository, SocioRepository socioRepository, AssembleaState assembleaState) {
+  public DelegheController(AssembleeRepository assembleeRepository, DelegheRepository delegheRepository, SocioRepository socioRepository, AssembleaState assembleaState, AssembleaService assembleaService) {
     this.assembleeRepository = assembleeRepository;
     this.delegheRepository = delegheRepository;
     this.socioRepository = socioRepository;
     this.assembleaState = assembleaState;
+    this.assembleaService = assembleaService;
   }
 
   @ModelAttribute(name = "delega")
@@ -60,38 +64,43 @@ public class DelegheController {
   }
 
   @GetMapping("/annulla")
+  @CacheEvict(value = {"deleghe"}, key = "#id")
   public String deleteDelega(@PathVariable("id") Long id, Principal principal) {
+    var assemblea = assembleaService.getAssemblea(id);
     var me = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
     var existingDelega = delegheRepository.findDelegaByDeleganteAndIdAssemblea(me, id);
     if(existingDelega.isEmpty()) {
       return "redirect:/";
     } else {
       // Se annullo la delega dovro' registrarmi come presente in proprio
-      assembleaState.setAssente(id, me);
+      assembleaState.setAssente(id, me, assemblea.isRequire2FA());
       delegheRepository.deleteById(existingDelega.get().getId());
       return "redirect:/assemblea/" + id;
     }
   }
 
   @PostMapping
+  @CacheEvict(value = {"deleghe"}, key = "#id")
   public String createDelega(DelegaEditModel delega, @PathVariable("id") Long id, Principal principal) {
     var me = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
-    var assemblea = assembleeRepository.findById(id);
-    if (assemblea.isEmpty()) {
-      return "redirect:/";
+    var assemblea = assembleaService.getAssemblea(id);
+
+    if(delegheRepository.findDelegaByDeleganteAndIdAssemblea(me, id).isPresent()) {
+      throw new IllegalStateException("Delega già presente");
     }
+
     var newDelega = Delega.builder()
-        .idAssemblea(assemblea.get().getId())
+        .idAssemblea(assemblea.getId())
         .delegante(me)
         .delegato(Long.parseLong(delega.getTessera()))
         .build();
 
     // Se la persona che delego e' presente, divento presente per delega
     if(assembleaState.getPresenti(id).contains(Long.parseLong(delega.getTessera()))) {
-      assembleaState.setPresente(id, me);
+      assembleaState.setPresente(id, me, assemblea.isRequire2FA());
     } else {
       // Altrimenti saro' assente
-      assembleaState.setAssente(id, me);
+      assembleaState.setAssente(id, me, assemblea.isRequire2FA());
     }
     delegheRepository.save(newDelega);
 

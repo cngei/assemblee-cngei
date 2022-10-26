@@ -35,6 +35,8 @@ public class Votazione {
   private boolean terminata;
   private Long numeroScelte;
   private Long presenti;
+  private Long quorum;
+  private Long quorumPerOpzione;
 
   private String quesito;
   private String descrizione;

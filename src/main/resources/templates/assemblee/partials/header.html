@@ -5,15 +5,15 @@
     <button class="btn btn-sm btn-outline" th:if="${!hasDelega && canDelega}">Delega</button>
     <button class="btn btn-sm" th:if="${hasDelega}">Annulla delega</button>
   </a>
-  <a th:if="${!assemblea.isInCorso()}" th:href="@{/assemblea/{id}/presenti(id=${assemblea.getId()})}">
+  <a th:if="${!assemblea.isInCorso() || isCovepo}" th:href="@{/assemblea/{id}/presenti(id=${assemblea.getId()})}">
     <button class="btn btn-sm ml-1">Elenco partecipanti</button>
   </a>
-  <th:block th:if="${canTogglePresenza}">
+  <th:block th:if="${canSetPresenza || canRemovePresenza}">
     <a th:href="@{/assemblea/{id}/presenza(id=${assemblea.getId()})}"
        th:unless="${hasDelega}"
        class="ml-1">
-      <button class="btn btn-success btn-sm" th:if="${!isPresente}">Registrati come presente</button>
-      <button class="btn btn-warning btn-sm" th:if="${isPresente}">Esci dall'assemblea</button>
+      <button class="btn btn-success btn-sm" th:if="${canSetPresenza}">Registrati come presente</button>
+      <button class="btn btn-warning btn-sm" th:if="${canRemovePresenza}">Esci dall'assemblea</button>
     </a>
   </th:block>
 </div>

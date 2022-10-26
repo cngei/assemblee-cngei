@@ -54,12 +54,22 @@ public class VotiController {
       Principal principal,
       VotoEditModel votoModel
   ) {
-    var me = Utils.getKeycloakUserFromPrincipal(principal);
+    var me = Utils.getUserIdFromPrincipal(principal);
     var assemblea = assembleeRepository.findById(id);
     var votazione = votazioneRepository.findById(idVotazione);
-    var delega = delegheRepository.findDelegaByDelegatoAndIdAssemblea(Long.valueOf(me.getPreferredUsername()), id);
-    var idProprio = votazione.get().getTipoVotazione() == TipoVotazione.PALESE ? me.getPreferredUsername() : UUID.randomUUID().toString();
-    var idDelega = votazione.get().getTipoVotazione() == TipoVotazione.PALESE ? String.valueOf(delega.map(Delega::getDelegante).orElse(-1L)) : UUID.randomUUID().toString();
+
+    if(!assembleaState.getPresenti(id).contains(me)) {
+      model.addAllAttributes(Map.of(
+          "assemblea", assemblea.get(),
+          "votazione", votazione.get(),
+          "isPalese", votazione.get().getTipoVotazione() == TipoVotazione.PALESE
+      ));
+      return "votazioni/preview";
+    }
+
+    var delega = delegheRepository.findDelegaByDelegatoAndIdAssemblea(me, id);
+    var idProprio = votazione.get().getTipoVotazione() == TipoVotazione.PALESE ? me + "-" + idVotazione : UUID.randomUUID().toString();
+    var idDelega = votazione.get().getTipoVotazione() == TipoVotazione.PALESE ? delega.map(Delega::getDelegante).orElse(-1L) + "-" + idVotazione : UUID.randomUUID().toString();
 
     votoModel.setIdProprio(idProprio);
     votoModel.setIdDelega(idDelega);

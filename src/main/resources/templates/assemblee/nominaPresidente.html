@@ -7,14 +7,14 @@
             <select class="select w-full max-w-sm input-bordered my-2" th:field="*{tessera}" required>
                 <option disabled selected th:value="null">Seleziona il presidente dell'assemblea</option>
                 <option
-                        th:each="partecipante : ${assemblea.getPartecipanti()}"
-                        th:value="${partecipante}"
-                        th:text="${partecipante}">
+                        th:each="partecipante : ${partecipanti}"
+                        th:value="${partecipante.getId()}"
+                        th:text="${partecipante.getId()} + ' ' + ${partecipante.getNome()}">
                 </option>
             </select>
             <button class="btn btn-primary">Nomina</button>
             <a th:href="@{/assemblea/{id}(id=${assemblea.getId()})}">
-                <button class="btn btn-outline">Annulla</button>
+                <button type='button' class="btn btn-outline">Annulla</button>
             </a>
         </form>
     </div>

@@ -13,7 +13,7 @@ import org.springframework.security.web.authentication.session.RegisterSessionAu
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 
 @KeycloakConfiguration
-class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
+class KcSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
   @Autowired
   public void configureGlobal(
       AuthenticationManagerBuilder auth) {

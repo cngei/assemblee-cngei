@@ -1,57 +1,74 @@
 package it.cngei.assemblee.state;
 
+import lombok.Getter;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.SetOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.ApplicationScope;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
+import javax.annotation.Resource;
+import java.io.Serializable;
+import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static com.j256.twofactorauth.TimeBasedOneTimePasswordUtil.generateBase32Secret;
 
 @ApplicationScope
 @Component
 public class AssembleaState {
-  private final Map<Long, Set<Long>> presenti = new ConcurrentHashMap<>();
-  private final Map<Long, Map<Long, String>> keys2fa = new ConcurrentHashMap<>();
+  @Resource(name = "presenzeTemplate")
+  private SetOperations<Long, Long> presenze;
+  @Resource(name = "keysTemplate")
+  private SetOperations<Long, Key2FA> keys;
 
-  public void setPresente(Long idAssemblea, Long idPartecipante) {
-    if(!presenti.containsKey(idAssemblea)) {
-      presenti.put(idAssemblea, Collections.synchronizedSet(new HashSet<>()));
+  @CacheEvict(value = {"partecipanti", "presentiTotali"}, key = "#idAssemblea")
+  public void setPresente(Long idAssemblea, Long idPartecipante, boolean use2fa) {
+    presenze.add(idAssemblea, idPartecipante);
+    if(use2fa) {
+     keys.add(idAssemblea, new Key2FA(idPartecipante, generateBase32Secret()));
     }
-    if(!keys2fa.containsKey(idAssemblea)) {
-      keys2fa.put(idAssemblea, new ConcurrentHashMap<>());
-    }
-
-    presenti.get(idAssemblea).add(idPartecipante);
-    keys2fa.get(idAssemblea).put(idPartecipante, generateBase32Secret());
   }
 
-  public void setAssente(Long idAssemblea, Long idPartecipante) {
-    if(!presenti.containsKey(idAssemblea)) {
-      return;
-    }
+  @CacheEvict(value = {"partecipanti", "presentiTotali"}, key = "#idAssemblea")
+  public void setPresente(Long idAssemblea, Long[] idPartecipanti) {
+    presenze.add(idAssemblea, idPartecipanti);
+  }
 
-    presenti.get(idAssemblea).remove(idPartecipante);
-    if(keys2fa.containsKey(idAssemblea)) {
-      keys2fa.get(idAssemblea).remove(idPartecipante);
-    }
-    if(presenti.get(idAssemblea).isEmpty()) {
-      presenti.remove(idAssemblea);
-      keys2fa.remove(idAssemblea);
+  @CacheEvict(value = {"partecipanti", "presentiTotali"}, key = "#idAssemblea")
+  public void setAssente(Long idAssemblea, Long idPartecipante, boolean use2fa) {
+    presenze.remove(idAssemblea, idPartecipante);
+    if(use2fa) {
+      keys.members(idAssemblea).stream().filter(x -> Objects.equals(x.idUtente, idPartecipante)).findFirst()
+          .map(x -> keys.remove(idAssemblea, x));
     }
   }
 
   public String get2faSecret(Long idAssemblea, Long idPartecipante) {
-    return keys2fa.get(idAssemblea).get(idPartecipante);
+    return keys.members(idAssemblea).stream().filter(x -> Objects.equals(x.idUtente, idPartecipante)).map(Key2FA::getKey).findFirst().orElseThrow();
   }
 
   public Set<Long> getPresenti(Long idAssemblea) {
-    if(!presenti.containsKey(idAssemblea)) {
-      presenti.put(idAssemblea, Collections.synchronizedSet(new HashSet<>()));
+    return presenze.members(idAssemblea);
+  }
+
+  @CacheEvict(value = {"partecipanti", "presentiTotali"}, key = "#idAssemblea")
+  public void clearPresenti(Long idAssemblea, boolean require2FA) {
+    presenze.intersectAndStore(idAssemblea, -1L, idAssemblea);
+    if(require2FA) {
+      keys.intersectAndStore(idAssemblea, -1L, idAssemblea);
     }
-    return presenti.get(idAssemblea);
+  }
+
+  public static class Key2FA implements Serializable {
+    @Getter
+    private final Long idUtente;
+    @Getter
+    private final String key;
+
+    public Key2FA(Long idUtente, String key) {
+      this.idUtente = idUtente;
+      this.key = key;
+    }
   }
 }

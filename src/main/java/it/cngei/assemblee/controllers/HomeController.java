@@ -1,5 +1,6 @@
 package it.cngei.assemblee.controllers;
 
+import it.cngei.assemblee.entities.Assemblea;
 import it.cngei.assemblee.repositories.AssembleeRepository;
 import it.cngei.assemblee.utils.Utils;
 import org.springframework.stereotype.Controller;
@@ -10,6 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import java.security.Principal;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/")
@@ -23,7 +27,9 @@ public class HomeController {
   @GetMapping
   public String getHome(Model model, Principal principal) {
     var token = Utils.getKeycloakUserFromPrincipal(principal);
-    model.addAttribute("assemblee", assembleeRepository.findVisible(Long.parseLong(token.getPreferredUsername())));
+    Map<Boolean, List<Assemblea>> assemblee = assembleeRepository.findVisible(Long.parseLong(token.getPreferredUsername())).stream().collect(Collectors.groupingBy(x -> x.getFine() == null));
+    model.addAttribute("assemblee", assemblee.get(Boolean.TRUE));
+    model.addAttribute("oldAssemblee", assemblee.get(Boolean.FALSE));
     return "assemblee/list";
   }
 
