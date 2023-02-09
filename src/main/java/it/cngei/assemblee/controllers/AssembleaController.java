@@ -64,10 +64,12 @@ public class AssembleaController {
   @GetMapping("/{id}")
   public String getAssemblea(Model model, @PathVariable("id") Long id, Principal principal) {
     var assemblea = assembleaService.getAssemblea(id);
-    var votazioni = votazioneRepository.findAllByIdAssemblea(id);
     var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
     var isDelegato = Arrays.asList(assemblea.getPartecipanti()).contains(idUtente);
     var presenti = assembleaState.getPresenti(id);
+    var isAdmin = idUtente == assemblea.getIdProprietario() || (assemblea.getIdPresidente() != null && idUtente == assemblea.getIdPresidente());
+
+    var votazioni = votazioneRepository.findAllByIdAssemblea(id).stream().filter(x -> isAdmin || (x.isAperta() || x.isTerminata())).collect(Collectors.toList());
 
     model.addAllAttributes(Map.of(
         "assemblea", assemblea,
@@ -79,11 +81,12 @@ public class AssembleaController {
         "canStop", assemblea.isInCorso() && assemblea.getIdProprietario().equals(idUtente),
         "votazioneState", votazioneState,
         "tessera", idUtente,
-        "isProprietario", idUtente == assemblea.getIdProprietario() || (assemblea.getIdPresidente() != null && idUtente == assemblea.getIdPresidente())
+        "isProprietario", isAdmin
     ));
+    
     model.addAttribute("presentiTotali", assembleaService.getPresentiTotali(id));
-    model.addAttribute("canSetPresenza", isDelegato && assemblea.isInCorso() && !presenti.contains(idUtente) && votazioni.stream().allMatch(Votazione::isTerminata) && !assemblea.isInPresenza());
-    model.addAttribute("canRemovePresenza", isDelegato && assemblea.isInCorso() && presenti.contains(idUtente) && votazioni.stream().allMatch(Votazione::isTerminata) && !assemblea.isInPresenza());
+    model.addAttribute("canSetPresenza", isDelegato && assemblea.isInCorso() && !presenti.contains(idUtente) && votazioni.stream().allMatch(x -> !x.isAperta() || x.isTerminata()) && !assemblea.isInPresenza());
+    model.addAttribute("canRemovePresenza", isDelegato && assemblea.isInCorso() && presenti.contains(idUtente) && votazioni.stream().allMatch(x -> !x.isAperta() || x.isTerminata()) && !assemblea.isInPresenza());
     model.addAttribute("canDelega", isDelegato && !assemblea.isNazionale());
     model.addAttribute("isDelegato", isDelegato);
     model.addAttribute("isCovepo", Utils.isCovepo(assemblea, idUtente));
@@ -98,7 +101,7 @@ public class AssembleaController {
     var assemblea = assembleaService.getAssemblea(id);
     var votazioni = votazioneRepository.findAllByIdAssemblea(id);
     var presenti = assembleaState.getPresenti(id);
-    if(presenti.contains(me) && votazioni.stream().anyMatch(x -> !x.isTerminata())) {
+    if(presenti.contains(me) && votazioni.stream().anyMatch(x -> x.isAperta() && !x.isTerminata())) {
       throw new IllegalStateException("Non puoi segnarti come assente durante una votazione");
     }
     if(presenti.contains(me)) {
@@ -195,6 +198,7 @@ public class AssembleaController {
         .nome(assembleaModel.getNome())
         .descrizione(assembleaModel.getDescrizione())
         .partecipanti(parsePartecipanti(assembleaModel.getPartecipanti()))
+        .totaleDelegati(assembleaModel.getTotalePartecipanti())
         .convocazione(LocalDateTime.parse(assembleaModel.getDateTime()))
         .stepOdg(0L)
         .odg(Arrays.stream(assembleaModel.getOdg().split("\n")).filter(x -> !x.isBlank()).toArray(String[]::new))

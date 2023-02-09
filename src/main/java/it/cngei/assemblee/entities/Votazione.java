@@ -32,7 +32,9 @@ public class Votazione {
 
   private Long idAssemblea;
   private TipoVotazione tipoVotazione;
+  private boolean aperta;
   private boolean terminata;
+  private boolean statutaria;
   private Long numeroScelte;
   private Long presenti;
   private Long quorum;

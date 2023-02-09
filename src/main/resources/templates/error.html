@@ -3,8 +3,18 @@
 <th:block th:include="fragments/base.html :: page">
     <div layout:fragment="content">
         <h2 class="text-xl">Si è verificato un errore</h2>
+        <p>
+            Se stavi votando, apri nuovamente la pagina dell'assemblea e verifica: se il tasto "Vota" non &egrave; pi&ugrave; presente,
+            vuol dire che il tuo voto &egrave; stato registrato correttamente.<br/>
+            Se stavi provando ad accedere a un'assemblea o a fare altre operazioni, prova a fare logout ed entrare nuovamente.<br/>
+            Se il problema non si risolve, contatta i Servizi Informatici (in Assemblea Nazionale ci trovi in chat o dal vivo, altrimenti a help@cngei.it).
+        </p>
+        <p class="mt-2"><b>Dettagli per i secchioni</b></p>
+        <p>Se contatti i Servizi Informatici, mandaci anche il contenuto di questo riquadro: noi non interpretiamo i sogni, ma queste scritte incomprensibili</p>
+        <div style="max-height: 400px; max-width: 100%; overflow: auto; border: 1px solid #ccc; border-radius: 4px; padding: 8px;">
         <p th:text="${message}"></p>
         <pre th:text="${trace}"></pre>
+        </div>
     </div>
 </th:block>
 </html>

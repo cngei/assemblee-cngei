@@ -7,6 +7,7 @@ public class AssembleaEditModel {
   private String nome;
   private String descrizione;
   private String partecipanti;
+  private Long totalePartecipanti;
   private String dateTime;
   private String odg;
   private boolean require2fa;

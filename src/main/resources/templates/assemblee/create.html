@@ -74,6 +74,18 @@
                         required
                 ></textarea>
             </div>
+            <div class="form-control w-full max-w-md">
+                <label class="label">
+                    <span class="label-text">Totale aventi diritto</span>
+                </label>
+                <input
+                        type="text"
+                        placeholder="Rilevante per votazioni statutarie"
+                        class="input input-bordered w-full"
+                        required
+                        th:field="*{totalePartecipanti}"
+                ></input>
+            </div>
             <div class="form-control max-w-md">
                 <label class="label cursor-pointer">
                     <span class="label-text">Assemblea in presenza: la CoVePo è responsabile di segnare manualmente i presenti</span>

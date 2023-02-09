@@ -6,6 +6,8 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+#    hibernate:
+#      ddl-auto: update
   devtools:
     add-properties: false
 keycloak:

@@ -63,6 +63,14 @@
                     <span class="label-text">Voto palese</span>
                     <input type="checkbox" th:field="*{votoPalese}" class="checkbox"></input>
                 </label>
+                <label class="label cursor-pointer">
+                    <span class="label-text">Votazione statutaria (quorum sugli aventi diritto)</span>
+                    <input type="checkbox" th:field="*{statutaria}" class="checkbox"></input>
+                </label>
+                <label class="label cursor-pointer">
+                    <span class="label-text">Apri subito</span>
+                    <input type="checkbox" th:field="*{aperta}" class="checkbox"></input>
+                </label>
             </div>
             <button class="btn btn-primary mt-2">Crea</button>
             <a th:href="${'/assemblea/' + assemblea.getId()}">

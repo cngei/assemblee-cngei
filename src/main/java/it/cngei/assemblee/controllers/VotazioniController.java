@@ -71,10 +71,22 @@ public class VotazioniController {
         .numeroScelte(votazioneModel.getNumeroScelte())
         .quorum(votazioneModel.getQuorum())
         .quorumPerOpzione(votazioneModel.getQuorumPerOpzione())
+        .aperta(votazioneModel.isAperta())
+        .statutaria(votazioneModel.isStatutaria())
         .terminata(false)
         .build();
     votazioneRepository.save(newVotazione);
     messageController.send(MessageModel.builder().idAssemblea(id).tipoMessaggio(TipoMessaggio.VOTAZIONE).build());
+
+    return "redirect:/assemblea/" + id;
+  }
+
+  @GetMapping("/{idVotazione}/apri")
+  public String apriVotazione(@PathVariable("id") Long id, @PathVariable("idVotazione") Long idVotazione, Principal principal) {
+    assembleaService.checkIsAdmin(id, Utils.getUserIdFromPrincipal(principal));
+    var votazione = votazioneRepository.getById(idVotazione);
+    votazione.setAperta(true);
+    votazioneRepository.save(votazione);
 
     return "redirect:/assemblea/" + id;
   }
@@ -98,7 +110,7 @@ public class VotazioniController {
 
   @GetMapping("/{idVotazione}/risultati")
   public String getVotazioneView(Model model, @PathVariable("id") Long id, @PathVariable("idVotazione") Long idVotazione) {
-    var assemblea = assembleeRepository.findById(id);
+    var assemblea = assembleaService.getAssemblea(id);
     var maybeVotazione = votazioneRepository.findById(idVotazione);
     var votazione = maybeVotazione.get();
     var voti = votiRepository.findAllByIdVotazione(idVotazione).stream()
@@ -114,7 +126,8 @@ public class VotazioniController {
     if (votazione.isTerminata() && votazione.getScelte().length == 3) {
       var maxVoti = IntStream.range(0, votazione.getScelte().length)
           .mapToLong(i -> voti.stream().filter(x -> Arrays.stream(x.getScelte()).anyMatch(y -> y == i)).count()).max().getAsLong();
-      if ((double) maxVoti / votazione.getPresenti() <= (votazione.getQuorum() / 100)) {
+      var percentualeVoti = ((double) maxVoti) / (votazione.isStatutaria() ? assemblea.getTotaleDelegati() : votazione.getPresenti());
+      if (percentualeVoti <= ((double) votazione.getQuorum() / 100)) {
         model.addAttribute("quorumRaggiunto", false);
       }
     }

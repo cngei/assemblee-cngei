@@ -13,4 +13,6 @@ public class VotazioneEditModel {
   private boolean votoPalese;
   private Long quorum = 50L;
   private Long quorumPerOpzione;
+  private boolean aperta;
+  private boolean statutaria;
 }
