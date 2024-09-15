@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <th:block th:fragment="odgActions">
   <div class="grid grid-flow-col-dense max-w-lg gap-2">
-    <a th:if="${isProprietario && assemblea.getStepOdg() < assemblea.getOdg().length - 1 && assemblea.isInCorso()}"
+    <a th:if="${isProprietario && assemblea.getStepOdg() < (assemblea.getOdg().length - 1) && assemblea.isInCorso()}"
        th:href="@{/assemblea/{id}/avanza-odg(id=${assemblea.getId()})}">
       <button class="btn btn-primary btn-sm">Prossimo punto</button>
     </a>

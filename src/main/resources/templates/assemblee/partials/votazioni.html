@@ -3,7 +3,51 @@
     <div>
         <button class="btn btn-sm" onclick="window.location.reload()">Ricarica elenco votazioni</button>
         <div class="grid grid-flow-column gap-4 sm:grid-cols-2 grid-cols-1">
-            <div class="card bg-base-100 shadow-xl pb-2 h-100" th:each="votazione : ${votazioni}">
+            <div class="card bg-base-100 shadow-xl pb-2 h-100" th:each="votazione : ${votazioni}" th:unless="${votazione.isTerminata()}">
+                <div class="card-body">
+                    <h2 class="card-title" th:text="${votazione.getQuesito()}"></h2>
+                    <p th:if="${votazione.isTerminata()}">Votazione terminata</p>
+                    <p th:if="${!votazione.isTerminata()}">Votazione aperta.
+                        <th:block th:text="${votazione.getVoti().size}"></th:block>
+                        voti su
+                        <th:block th:text="${presentiTotali.getKey() + presentiTotali.getValue()}"></th:block>
+                        presenti.
+                    </p>
+                    <div class="card-actions justify-end">
+                        <a th:if="${!hasDelega && !votazione.isTerminata() && votazione.isAperta() && isPresente && !votazioneState.getVotanti(votazione.getId()).contains(tessera)}"
+                           th:href="@{/assemblea/{id}/votazione/{idVotazione}(id=${assemblea.getId()},idVotazione=${votazione.getId()})}">
+                            <button class="btn btn-primary">Vota</button>
+                        </a>
+                        <a th:if="${votazione.isTerminata() || votazione.getTipoVotazione().name.equals('PALESE')}"
+                           th:href="@{/assemblea/{id}/votazione/{idVotazione}/risultati(id=${assemblea.getId()},idVotazione=${votazione.getId()})}">
+                            <button class="btn">Risultati</button>
+                        </a>
+                        <button th:if="${isDelegato && (!isPresente || hasDelega) && !votazione.isTerminata()}"
+                                class="btn btn-disabled">Non sei presente
+                        </button>
+                        <a th:if="${!isDelegato && !votazione.isTerminata()}"
+                           th:href="@{/assemblea/{id}/votazione/{idVotazione}/(id=${assemblea.getId()},idVotazione=${votazione.getId()})}">
+                            <button class="btn">Dettagli</button>
+                        </a>
+                        <a th:if="${canStop && !votazione.isAperta()}"
+                           th:href="@{/assemblea/{id}/votazione/{idVotazione}/apri(id=${assemblea.getId()},idVotazione=${votazione.getId()})}">
+                            <button class="btn btn-primary">Apri votazione</button>
+                        </a>
+                        <a th:if="${canStop && votazione.isAperta() && !votazione.isTerminata()}"
+                           th:href="@{/assemblea/{id}/votazione/{idVotazione}/termina(id=${assemblea.getId()},idVotazione=${votazione.getId()})}">
+                            <button class="btn btn-error">Termina votazione</button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
+<th:block th:fragment="votazioniTerminate">
+    <div>
+        <button class="btn btn-sm" onclick="window.location.reload()">Ricarica elenco votazioni</button>
+        <div class="grid grid-flow-column gap-4 sm:grid-cols-2 grid-cols-1">
+            <div class="card bg-base-100 shadow-xl pb-2 h-100" th:each="votazione : ${votazioni}" th:if="${votazione.isTerminata()}">
                 <div class="card-body">
                     <h2 class="card-title" th:text="${votazione.getQuesito()}"></h2>
                     <p th:if="${votazione.isTerminata()}">Votazione terminata</p>

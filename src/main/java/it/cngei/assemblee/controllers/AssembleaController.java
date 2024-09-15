@@ -3,7 +3,6 @@ package it.cngei.assemblee.controllers;
 import it.cngei.assemblee.dtos.AssembleaEditModel;
 import it.cngei.assemblee.entities.Assemblea;
 import it.cngei.assemblee.entities.Delega;
-import it.cngei.assemblee.entities.Votazione;
 import it.cngei.assemblee.repositories.AssembleeRepository;
 import it.cngei.assemblee.repositories.DelegheRepository;
 import it.cngei.assemblee.repositories.SocioRepository;
@@ -83,7 +82,7 @@ public class AssembleaController {
         "tessera", idUtente,
         "isProprietario", isAdmin
     ));
-    
+
     model.addAttribute("presentiTotali", assembleaService.getPresentiTotali(id));
     model.addAttribute("canSetPresenza", isDelegato && assemblea.isInCorso() && !presenti.contains(idUtente) && votazioni.stream().allMatch(x -> !x.isAperta() || x.isTerminata()) && !assemblea.isInPresenza());
     model.addAttribute("canRemovePresenza", isDelegato && assemblea.isInCorso() && presenti.contains(idUtente) && votazioni.stream().allMatch(x -> !x.isAperta() || x.isTerminata()) && !assemblea.isInPresenza());
@@ -266,6 +265,7 @@ public class AssembleaController {
         .map(String::trim)
         .filter(x -> Pattern.matches("\\d+", x))
         .map(Long::parseLong)
+        .collect(Collectors.toSet())
         .toArray(Long[]::new);
   }
 

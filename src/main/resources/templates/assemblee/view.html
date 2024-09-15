@@ -50,7 +50,7 @@
     <p th:if="${assemblea.totaleDelegati != null}">
         <p>Il numero massimo di aventi diritto per questa assemblea &egrave; <strong th:text="${assemblea.totaleDelegati}"></strong></p>
         <p th:if="${(presentiTotali.getKey() + presentiTotali.getValue()) > (assemblea.totaleDelegati / 2)}">Il quorum costitutivo &egrave; raggiunto.</p>
-    </div>
     <th:block th:insert="assemblee/partials/odgActions.html :: odgActions" />
+    <th:block th:insert="assemblee/partials/votazioni.html :: votazioniTerminate" />
 </div>
 </html>
