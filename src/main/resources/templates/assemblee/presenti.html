@@ -61,14 +61,22 @@
                         </th:block>
                     </td>
                     <td>
-                        <a th:if="${isCovepo && !presenti.contains(partecipante.getKey())}"
-                           th:href="${'/assemblea/' + assembleaId + '/presente/' + partecipante.getKey()}">
-                            <button class="btn btn-outline btn-sm mb-1">Segna presente</button>
-                        </a>
-                        <a th:if="${isCovepo && presenti.contains(partecipante.getKey())}"
-                           th:href="${'/assemblea/' + assembleaId + '/caccia/' + partecipante.getKey()}">
-                            <button class="btn btn-outline btn-sm mb-1">Segna assente</button>
-                        </a>
+                        <button
+                                th:if="${isCovepo && !presenti.contains(partecipante.getKey())}"
+                                th:hx-post="${'/assemblea/' + assembleaId + '/presente/' + partecipante.getKey()}"
+                                hx-swap="outerHTML"
+                                type="button"
+                                class="btn btn-outline btn-sm mb-1">Segna presente
+                        </button>
+                        <button
+                                th:if="${isCovepo && presenti.contains(partecipante.getKey())}"
+                                th:hx-post="${'/assemblea/' + assembleaId + '/caccia/' + partecipante.getKey()}"
+                                hx-swap="outerHTML"
+                                type="button"
+                                class="btn btn-outline btn-sm mb-1"
+                        >
+                            Segna assente
+                        </button>
                         <th:block th:if="${!isCovepo && presenti.contains(partecipante.getKey())}">Presente</th:block>
                         <a th:if="${isCovepo}"
                            onclick="return window.confirm('Vuoi rimuovere questo partecipante?') ? true : false;"

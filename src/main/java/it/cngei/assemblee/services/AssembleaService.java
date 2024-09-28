@@ -87,6 +87,14 @@ public class AssembleaService {
     }
   }
 
+  @Cacheable(value = "isAdminOrCovepoCache", key = "{#idAssemblea, #idUtente}")
+  public void checkIsAdminOrCovepo(Long idAssemblea, Long idUtente) {
+    var assemblea = getAssemblea(idAssemblea);
+    if(!(Objects.equals(idUtente, assemblea.getIdProprietario()) || Objects.equals(idUtente, assemblea.getIdPresidente())) || (assemblea.getCovepo() != null && Arrays.asList(assemblea.getCovepo()).contains(idUtente))) {
+      throw new AccessDeniedException("Non sei un amministratore di questa assemblea");
+    }
+  }
+
   public void nextOdg(Long id) {
       var assemblea = getAssemblea(id);
 

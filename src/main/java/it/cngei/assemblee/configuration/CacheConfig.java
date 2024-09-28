@@ -9,14 +9,15 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @EnableCaching
 public class CacheConfig {
-  @Bean
-  public CacheManager cacheManager() {
-    return new ConcurrentMapCacheManager(
-        "partecipanti",
-        "isDelegatoCache",
-        "isAdminCache",
-        "deleghe",
-        "presentiTotali"
-    );
-  }
+    @Bean
+    public CacheManager cacheManager() {
+        return new ConcurrentMapCacheManager(
+                "partecipanti",
+                "isDelegatoCache",
+                "isAdminCache",
+                "isAdminOrCovepoCache",
+                "deleghe",
+                "presentiTotali"
+        );
+    }
 }

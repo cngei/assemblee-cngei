@@ -127,7 +127,7 @@ public class VotiController {
       var inProprio = Voto.builder()
           .id(votoModel.getIdProprio())
           .idVotazione(idVotazione)
-          .scelte(parseScelte(votoModel.getInProprio(), votazione.get().getScelte()))
+          .scelte(parseScelte(votoModel.getInProprio(), votazione.get().getScelte(), votazione.get().getNumeroScelte()))
           .build();
       votiRepository.save(inProprio);
       votazioneState.setVotante(idVotazione, me);
@@ -136,7 +136,7 @@ public class VotiController {
         var perDelega = Voto.builder()
             .id(votoModel.getIdDelega())
             .idVotazione(idVotazione)
-            .scelte(parseScelte(votoModel.getPerDelega(), votazione.get().getScelte()))
+            .scelte(parseScelte(votoModel.getPerDelega(), votazione.get().getScelte(), votazione.get().getNumeroScelte()))
             .perDelega(true)
             .build();
         votiRepository.save(perDelega);
@@ -150,16 +150,17 @@ public class VotiController {
     }
   }
 
-  private Long[] parseScelte(List<String> scelte, String[] opzioni) {
+  private Long[] parseScelte(List<String> scelte, String[] opzioni, Long maxScelte) {
     if(scelte == null || scelte.isEmpty()) {
       return new Long[]{(long) (opzioni.length - 1)};
     }
 
     var opzioniStream = Arrays.stream(opzioni).toList();
     return scelte.stream()
+        .filter(Objects::nonNull)
         .map(opzioniStream::indexOf)
         .filter(x -> x >= 0)
-        .limit(2)
+        .limit(maxScelte)
         .map(Long::valueOf)
         .toArray(Long[]::new);
   }
