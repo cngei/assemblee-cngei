@@ -62,14 +62,14 @@
                     </td>
                     <td>
                         <button
-                                th:if="${isCovepo && !presenti.contains(partecipante.getKey())}"
+                                th:if="${isCovepo && !presenti.contains(partecipante.getKey()) && !deleghe.containsKey(partecipante.getKey())}"
                                 th:hx-post="${'/assemblea/' + assembleaId + '/presente/' + partecipante.getKey()}"
                                 hx-swap="outerHTML"
                                 type="button"
                                 class="btn btn-outline btn-sm mb-1">Segna presente
                         </button>
                         <button
-                                th:if="${isCovepo && presenti.contains(partecipante.getKey())}"
+                                th:if="${isCovepo && presenti.contains(partecipante.getKey()) && !deleghe.containsKey(partecipante.getKey())}"
                                 th:hx-post="${'/assemblea/' + assembleaId + '/caccia/' + partecipante.getKey()}"
                                 hx-swap="outerHTML"
                                 type="button"

@@ -1,5 +1,19 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base.html}">
+<head>
+    <script type="application/javascript">
+        window.onload = function () {
+            console.log("aaaaa")
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('top')) {
+                const top = Number.parseInt(urlParams.get('top'), 10);
+                [...document.querySelectorAll(".label-text")].slice(0, top).forEach((el) => {
+                    el.style.fontWeight = "bold";
+                })
+            }
+        }
+    </script>
+</head>
 <th:block th:include="fragments/base.html :: page">
     <div layout:fragment="content">
         <h2 class="text-xl" th:text="${votazione.getQuesito()}"></h2>
@@ -14,17 +28,17 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="scelta, iStat : ${votazione.getScelte()}">
+            <tr th:each="opzione : ${opzioni}">
                 <td>
-                        <span class="label-text" th:text="${scelta}"></span>
+                        <span class="label-text" th:text="${opzione.getTitolo()}"></span>
                 </td>
                 <td>
-                    <strong th:text="${inProprio[iStat.index] + perDelega[iStat.index]}"></strong>
+                    <strong th:text="${opzione.getTotale()}"></strong>
                 </td>
                 <td>
-                    <span th:text="${inProprio[iStat.index]}"></span>
+                    <span th:text="${opzione.getInProprio()}"></span>
                     /
-                    <span th:text="${perDelega[iStat.index]}"></span>
+                    <span th:text="${opzione.getPerDelega()}"></span>
                 </td>
             </tr>
             <tr th:if="${votazione.getPresenti() != null}">

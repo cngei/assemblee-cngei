@@ -49,7 +49,7 @@ public class AssembleaPresidenzaController {
 
   @GetMapping("/{id}/nomina-presidente")
   public String getNominaPresidente(@PathVariable("id") Long id, Model model, Principal principal) {
-    var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
+    var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getClaim("preferred_username"));
     var assemblea = assembleaService.getAssemblea(id);
     assembleaService.checkIsAdmin(id, idUtente);
 
@@ -62,7 +62,7 @@ public class AssembleaPresidenzaController {
 
   @PostMapping("/{id}/nomina-presidente")
   public String nominaPresidente(@PathVariable("id") Long id, NominaPresidenteEditModel presidenteEditModel, Principal principal) {
-    var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
+    var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getClaim("preferred_username"));
     var assemblea = assembleaService.getAssemblea(id);
     assembleaService.checkIsAdmin(id, idUtente);
 
@@ -74,7 +74,7 @@ public class AssembleaPresidenzaController {
 
   @GetMapping("/{id}/nomina-covepo")
   public String getNominaCovepo(@PathVariable("id") Long id, Model model, Principal principal) {
-    var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
+    var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getClaim("preferred_username"));
     var assemblea = assembleaService.getAssemblea(id);
     assembleaService.checkIsAdmin(id, idUtente);
 
@@ -87,7 +87,7 @@ public class AssembleaPresidenzaController {
 
   @PostMapping("/{id}/nomina-covepo")
   public String nominaCovepo(@PathVariable("id") Long id, NominaCovepoEditModel nominaCovepoEditModel, Principal principal) {
-    var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
+    var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getClaim("preferred_username"));
     var assemblea = assembleaService.getAssemblea(id);
     assembleaService.checkIsAdmin(id, idUtente);
 
@@ -139,7 +139,7 @@ public class AssembleaPresidenzaController {
 
   @GetMapping("/{id}/inizia")
   public String startAssemblea(@PathVariable("id") Long id, Principal principal) {
-    var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
+    var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getClaim("preferred_username"));
     var maybeAssemblea = assembleeRepository.findById(id);
     if(maybeAssemblea.isEmpty()) {
       return "redirect:/";
@@ -155,7 +155,7 @@ public class AssembleaPresidenzaController {
 
   @GetMapping("/{id}/termina")
   public String stopAssemblea(@PathVariable("id") Long id, Principal principal) {
-    var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
+    var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getClaim("preferred_username"));
     var assemblea = assembleaService.getAssemblea(id);
     assembleaService.checkIsAdmin(id, idUtente);
 
@@ -170,7 +170,7 @@ public class AssembleaPresidenzaController {
 
   @GetMapping("/{id}/toggle-mozioni")
   public String toggleMozioni(@PathVariable("id") Long id, Principal principal) {
-    var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
+    var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getClaim("preferred_username"));
     var assemblea = assembleaService.getAssemblea(id);
     assembleaService.checkIsAdmin(id, idUtente);
 

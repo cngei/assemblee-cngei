@@ -7,7 +7,8 @@ import org.springframework.data.redis.core.SetOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.ApplicationScope;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
+
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.Set;
@@ -22,40 +23,41 @@ public class AssembleaState {
   @Resource(name = "keysTemplate")
   private SetOperations<Long, Key2FA> keys;
 
-  @CacheEvict(value = {"partecipanti", "presentiTotali"}, key = "#idAssemblea")
+  @CacheEvict(value = { "partecipanti", "presentiTotali" }, key = "#idAssemblea")
   public void setPresente(Long idAssemblea, Long idPartecipante, boolean use2fa) {
     presenze.add(idAssemblea, idPartecipante);
-    if(use2fa) {
-     keys.add(idAssemblea, new Key2FA(idPartecipante, generateBase32Secret()));
+    if (use2fa) {
+      keys.add(idAssemblea, new Key2FA(idPartecipante, generateBase32Secret()));
     }
   }
 
-  @CacheEvict(value = {"partecipanti", "presentiTotali"}, key = "#idAssemblea")
+  @CacheEvict(value = { "partecipanti", "presentiTotali" }, key = "#idAssemblea")
   public void setPresente(Long idAssemblea, Long[] idPartecipanti) {
     presenze.add(idAssemblea, idPartecipanti);
   }
 
-  @CacheEvict(value = {"partecipanti", "presentiTotali"}, key = "#idAssemblea")
+  @CacheEvict(value = { "partecipanti", "presentiTotali" }, key = "#idAssemblea")
   public void setAssente(Long idAssemblea, Long idPartecipante, boolean use2fa) {
     presenze.remove(idAssemblea, idPartecipante);
-    if(use2fa) {
+    if (use2fa) {
       keys.members(idAssemblea).stream().filter(x -> Objects.equals(x.idUtente, idPartecipante)).findFirst()
           .map(x -> keys.remove(idAssemblea, x));
     }
   }
 
   public String get2faSecret(Long idAssemblea, Long idPartecipante) {
-    return keys.members(idAssemblea).stream().filter(x -> Objects.equals(x.idUtente, idPartecipante)).map(Key2FA::getKey).findFirst().orElseThrow();
+    return keys.members(idAssemblea).stream().filter(x -> Objects.equals(x.idUtente, idPartecipante))
+        .map(Key2FA::getKey).findFirst().orElseThrow();
   }
 
   public Set<Long> getPresenti(Long idAssemblea) {
     return presenze.members(idAssemblea);
   }
 
-  @CacheEvict(value = {"partecipanti", "presentiTotali"}, key = "#idAssemblea")
+  @CacheEvict(value = { "partecipanti", "presentiTotali" }, key = "#idAssemblea")
   public void clearPresenti(Long idAssemblea, boolean require2FA) {
     presenze.intersectAndStore(idAssemblea, -1L, idAssemblea);
-    if(require2FA) {
+    if (require2FA) {
       keys.intersectAndStore(idAssemblea, -1L, idAssemblea);
     }
   }

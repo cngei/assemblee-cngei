@@ -5,7 +5,7 @@
     <button class="btn btn-sm btn-outline" th:if="${!hasDelega && canDelega}">Delega</button>
     <button class="btn btn-sm" th:if="${hasDelega}">Annulla delega</button>
   </a>
-  <a th:if="${!assemblea.isInCorso() || isCovepo}" th:href="@{/assemblea/{id}/presenti(id=${assemblea.getId()})}">
+  <a th:href="@{/assemblea/{id}/presenti(id=${assemblea.getId()})}">
     <button class="btn btn-sm ml-1">Elenco partecipanti</button>
   </a>
   <th:block th:if="${canSetPresenza || canRemovePresenza}">

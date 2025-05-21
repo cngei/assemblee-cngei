@@ -1,15 +1,11 @@
 package it.cngei.assemblee.state;
 
+import jakarta.annotation.Resource;
 import org.springframework.data.redis.core.SetOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.ApplicationScope;
 
-import javax.annotation.Resource;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 @ApplicationScope
 @Component

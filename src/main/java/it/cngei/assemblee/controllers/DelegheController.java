@@ -43,7 +43,7 @@ public class DelegheController {
 
   @GetMapping
   public String getDelegaView(Model model, @PathVariable("id") Long id, Principal principal) {
-    var me = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
+    var me = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getClaim("preferred_username"));
     var assemblea = assembleeRepository.findById(id);
     var existingDelega = delegheRepository.findDelegaByDeleganteAndIdAssemblea(me, id);
     var allDeleghe = delegheRepository.findAllByIdAssemblea(id);
@@ -67,7 +67,7 @@ public class DelegheController {
   @CacheEvict(value = {"deleghe"}, key = "#id")
   public String deleteDelega(@PathVariable("id") Long id, Principal principal) {
     var assemblea = assembleaService.getAssemblea(id);
-    var me = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
+    var me = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getClaim("preferred_username"));
     var existingDelega = delegheRepository.findDelegaByDeleganteAndIdAssemblea(me, id);
     if(existingDelega.isEmpty()) {
       return "redirect:/";
@@ -82,7 +82,7 @@ public class DelegheController {
   @PostMapping
   @CacheEvict(value = {"deleghe"}, key = "#id")
   public String createDelega(DelegaEditModel delega, @PathVariable("id") Long id, Principal principal) {
-    var me = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
+    var me = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getClaim("preferred_username"));
     var assemblea = assembleaService.getAssemblea(id);
 
     if(delegheRepository.findDelegaByDeleganteAndIdAssemblea(me, id).isPresent()) {

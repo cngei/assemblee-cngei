@@ -63,7 +63,7 @@ public class AssembleaController {
     @GetMapping("/{id}")
     public String getAssemblea(Model model, @PathVariable("id") Long id, Principal principal) {
         var assemblea = assembleaService.getAssemblea(id);
-        var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
+        var idUtente = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getClaim("preferred_username"));
         var isDelegato = Arrays.asList(assemblea.getPartecipanti()).contains(idUtente);
         var presenti = assembleaState.getPresenti(id);
         var isAdmin = idUtente == assemblea.getIdProprietario() || (assemblea.getIdPresidente() != null && idUtente == assemblea.getIdPresidente());
@@ -86,7 +86,7 @@ public class AssembleaController {
         model.addAttribute("presentiTotali", assembleaService.getPresentiTotali(id));
         model.addAttribute("canSetPresenza", isDelegato && assemblea.isInCorso() && !presenti.contains(idUtente) && votazioni.stream().allMatch(x -> !x.isAperta() || x.isTerminata()) && !assemblea.isInPresenza());
         model.addAttribute("canRemovePresenza", isDelegato && assemblea.isInCorso() && presenti.contains(idUtente) && votazioni.stream().allMatch(x -> !x.isAperta() || x.isTerminata()) && !assemblea.isInPresenza());
-        model.addAttribute("canDelega", isDelegato && !assemblea.isNazionale());
+        model.addAttribute("canDelega", isDelegato && !assemblea.isNazionale() && !assemblea.isInPresenza());
         model.addAttribute("isDelegato", isDelegato);
         model.addAttribute("isCovepo", Utils.isCovepo(assemblea, idUtente));
         model.addAttribute("ownsDelega", delegheRepository.findDelegaByDelegatoAndIdAssemblea(idUtente, id).isPresent());
@@ -95,7 +95,7 @@ public class AssembleaController {
 
     @GetMapping("/{id}/presenza")
     public String togglePresenza(@PathVariable("id") Long id, Principal principal) {
-        var me = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
+        var me = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getClaim("preferred_username"));
         var delega = delegheRepository.findDelegaByDelegatoAndIdAssemblea(me, id);
         var assemblea = assembleaService.getAssemblea(id);
         var votazioni = votazioneRepository.findAllByIdAssemblea(id);
@@ -118,7 +118,7 @@ public class AssembleaController {
 
     @GetMapping("/{id}/2fa")
     public String get2fa(@PathVariable("id") Long id, Principal principal, Model model) {
-        var me = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
+        var me = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getClaim("preferred_username"));
         model.addAttribute("key", qrImageUrl("Assemblea - " + me, assembleaState.get2faSecret(id, me)));
         model.addAttribute("assembleaId", id);
         return "assemblee/2fa";
@@ -127,7 +127,7 @@ public class AssembleaController {
     @GetMapping("/{id}/presenti")
     public String getPresenti(@PathVariable("id") Long id, Model model, Principal principal) {
         var assemblea = assembleaService.getAssemblea(id);
-        var me = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
+        var me = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getClaim("preferred_username"));
         var deleghe = delegheService.getDeleghe(id);
         model.addAttribute("partecipanti", assembleaService.getPartecipanti(id));
         model.addAttribute("presenti", assembleaState.getPresenti(id));
@@ -153,7 +153,7 @@ public class AssembleaController {
     @GetMapping("/{id}/caccia")
     public String kickEverybody(@PathVariable("id") Long id, Principal principal) {
         var assemblea = assembleaService.getAssemblea(id);
-        var me = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
+        var me = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getClaim("preferred_username"));
         assembleaService.checkIsAdmin(id, me);
         assembleaState.clearPresenti(id, assemblea.isRequire2FA());
         return "redirect:/assemblea/" + id + "/presenti";
@@ -180,7 +180,7 @@ public class AssembleaController {
     @GetMapping("crea")
     public String getCreateAssemblea(Model model, Principal principal) {
         var me = Utils.getKeycloakUserFromPrincipal(principal);
-        List<String> groups = (List<String>) me.getOtherClaims().get("groups");
+        List<String> groups = (List<String>) me.getClaim("groups");
         var sezione = groups.stream().filter(x -> x.matches("/[\\w\\s']+")).findFirst().map(x -> x.substring(1));
         if (sezione.isPresent()) {
             model.addAttribute("nomeSezione", sezione.get());
@@ -192,7 +192,7 @@ public class AssembleaController {
 
     @PostMapping("/crea")
     public String createAssemblea(AssembleaEditModel assembleaModel, Principal principal) {
-        var me = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
+        var me = Long.parseLong(Utils.getKeycloakUserFromPrincipal(principal).getClaim("preferred_username"));
         var newAssemblea = Assemblea.builder()
                 .idProprietario(me)
                 .nome(assembleaModel.getNome())

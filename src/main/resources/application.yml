@@ -10,17 +10,32 @@ spring:
 #      ddl-auto: update
   devtools:
     add-properties: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}
+      client:
+        registration:
+          keycloak:
+            client-id: ${keycloak.resource}
+            client-secret: ${KEYCLOAK_CLIENT_SECRET:}
+            scope: openid, profile, email
+            client-name: Keycloak
+            provider: keycloak
+        provider:
+          keycloak:
+            issuer-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}
+            user-name-attribute: preferred_username
+            authorization-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/auth
+            token-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/token
+            user-info-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/userinfo
+            jwk-set-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/certs
 keycloak:
   auth-server-url: https://auth.cngei.it/auth
   realm: cngei
   resource: assemblee
   public-client: true
-  security-constraints:
-    - auth-roles:
-        - user
-    - security-collections:
-        - patterns:
-            - /**
 server:
   error:
     include-exception: true

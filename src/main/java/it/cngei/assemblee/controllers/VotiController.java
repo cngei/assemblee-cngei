@@ -100,7 +100,7 @@ public class VotiController {
       VotoEditModel votoModel,
       Principal principal
   ) {
-    var me = Long.valueOf(Utils.getKeycloakUserFromPrincipal(principal).getPreferredUsername());
+    var me = Long.valueOf(Utils.getKeycloakUserFromPrincipal(principal).getClaim("preferred_username"));
     var assemblea = assembleeRepository.findById(id);
     var votazione = votazioneRepository.findById(idVotazione);
     var delega = delegheRepository.findDelegaByDelegatoAndIdAssemblea(me, id);

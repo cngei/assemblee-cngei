@@ -13,13 +13,13 @@ import it.cngei.assemblee.repositories.VotiRepository;
 import it.cngei.assemblee.services.AssembleaService;
 import it.cngei.assemblee.state.AssembleaState;
 import it.cngei.assemblee.utils.Utils;
+import lombok.Data;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -132,6 +132,20 @@ public class VotazioniController {
       }
     }
 
+    List<OpzioneModel> opzioni = new ArrayList<>();
+    for (int i = 0; i < votazione.getScelte().length; i++) {
+      OpzioneModel opzioneModel = new OpzioneModel();
+      opzioneModel.setTitolo(votazione.getScelte()[i]);
+      opzioneModel.setInProprio(inProprio[i]);
+      opzioneModel.setPerDelega(perDelega[i]);
+      opzioneModel.setTotale(opzioneModel.inProprio + opzioneModel.perDelega);
+      opzioni.add(opzioneModel);
+    }
+
+    if(votazione.getScelte().length >= 3) {
+      opzioni = opzioni.stream().sorted(Comparator.comparingLong(x -> -x.totale)).toList();
+    }
+
     model.addAllAttributes(Map.of(
         "idAssemblea", id,
         "votazione", votazione,
@@ -140,10 +154,17 @@ public class VotazioniController {
             x.setId(socioRepository.findById(Long.valueOf(x.getId())).map(Socio::getNome).orElse(x.getId()));
           }
         }).collect(Collectors.toList()),
-        "inProprio", inProprio,
-        "perDelega", perDelega
+        "opzioni", opzioni
     ));
 
     return "votazioni/risultati";
+  }
+
+  @Data
+  static class OpzioneModel {
+    private String titolo;
+    private Long inProprio;
+    private Long perDelega;
+    private Long totale;
   }
 }

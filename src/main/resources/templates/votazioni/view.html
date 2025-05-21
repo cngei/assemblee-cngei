@@ -71,13 +71,13 @@
                         <input th:name="|inProprio[${iStat.index}]|"
                                th:value="${scelta}"
                                data-delega="false"
-                               type="checkbox" class="checkbox"/>
+                               type="checkbox" class="checkbox-lg checkbox-primary"/>
                     </td>
                     <td th:if="${hasDelega}">
                         <input th:name="|perDelega[${iStat.index}]|"
                                th:value="${scelta}"
                                data-delega="true"
-                               type="checkbox" class="checkbox"/>
+                               type="checkbox" class="checkbox-lg checkbox-primary"/>
                     </td>
                 </tr>
                 </tbody>
@@ -106,31 +106,31 @@
                     </div>
                 </div>
             </div>
-            <div class="alert alert-info shadow-lg my-4" th:if="${idProprio != null}" th:unless="${isPalese}">
-                <div>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                         class="stroke-current flex-shrink-0 w-6 h-6">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <div>
-                        <p>Nell'elenco voti, le tue scelte saranno registrate con l'id che trovi qui sotto.</p>
-                        <p>Per mantenere segreto il voto, quando aggiorni o cambi pagina, non potrai più vedere i codici
-                            dei tuoi voti. L'associazione tra id voto e votante <strong>non</strong> viene salvata.</p>
-                        <ul class="list-disc">
-                            <li th:text="${idProprio.split('-')[0]}"></li>
-                            <li th:if="${idDelega != -1}" th:text="${idDelega.split('-')[0]}"></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
             <div class="flex">
                 <button class="btn btn-primary">Invia voto</button>
-                <a th:href="${'/assemblea/' + assemblea.getId()}" class="ml-1">
+                <a th:href="${'/assemblea/' + assemblea.getId()}" class="ml-1" hx-on:click="event.currentTarget.setAttribute('disabled', 'true')">
                     <button class="btn btn-outline" type="button">Torna all'assemblea</button>
                 </a>
             </div>
         </form>
+        <div class="alert alert-info shadow-lg my-4" th:if="${idProprio != null}" th:unless="${isPalese}">
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                     class="stroke-current flex-shrink-0 w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div>
+                    <p>Nell'elenco voti, le tue scelte saranno registrate con l'id che trovi qui sotto.</p>
+                    <p>Per mantenere segreto il voto, quando aggiorni o cambi pagina, non potrai più vedere i codici
+                        dei tuoi voti. L'associazione tra id voto e votante <strong>non</strong> viene salvata.</p>
+                    <ul class="list-disc">
+                        <li th:text="${idProprio.split('-')[0]}"></li>
+                        <li th:if="${idDelega != -1}" th:text="${idDelega.split('-')[0]}"></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
 </th:block>
 </html>

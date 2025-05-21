@@ -1,17 +1,22 @@
 package it.cngei.assemblee.entities;
 
-import com.vladmihalcea.hibernate.type.array.StringArrayType;
+import java.util.List;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import it.cngei.assemblee.enums.TipoVotazione;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
-
-import javax.persistence.*;
-import java.util.List;
 
 @Data
 @Builder
@@ -19,15 +24,9 @@ import java.util.List;
 @Table
 @NoArgsConstructor
 @AllArgsConstructor
-@TypeDefs({
-    @TypeDef(
-        name = "string-array",
-        typeClass = StringArrayType.class
-    )
-})
 public class Votazione {
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.AUTO)
   private Long id;
 
   private Long idAssemblea;
@@ -47,6 +46,6 @@ public class Votazione {
   private List<Voto> voti;
 
   @Column(name = "scelte", columnDefinition = "varchar[]")
-  @Type(type = "string-array")
+  @JdbcTypeCode(SqlTypes.ARRAY)
   private String[] scelte;
 }

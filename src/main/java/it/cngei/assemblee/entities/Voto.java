@@ -1,29 +1,21 @@
 package it.cngei.assemblee.entities;
 
-import com.vladmihalcea.hibernate.type.array.LongArrayType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 
 @Data
 @Builder
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@TypeDefs({
-    @TypeDef(
-        name = "long-array",
-        typeClass = LongArrayType.class
-    )
-})
 public class Voto {
   @Id
   private String id;
@@ -32,6 +24,6 @@ public class Voto {
   private boolean perDelega;
 
   @Column(name = "scelte", columnDefinition = "bigint[]")
-  @Type(type = "long-array")
+  @JdbcTypeCode(SqlTypes.ARRAY)
   private Long[] scelte;
 }
