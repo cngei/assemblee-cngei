@@ -15,7 +15,7 @@ import jakarta.persistence.*;
 @AllArgsConstructor
 public class Delega {
   @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   private Long idAssemblea;

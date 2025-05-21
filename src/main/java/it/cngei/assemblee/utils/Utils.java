@@ -17,7 +17,7 @@ public class Utils {
 
   public static Long getUserIdFromPrincipal(Principal principal) {
     OidcIdToken jwt = getKeycloakUserFromPrincipal(principal);
-    return Long.valueOf(jwt.getSubject());
+    return Long.valueOf(jwt.getClaimAsString("preferred_username"));
   }
 
   public static boolean isCovepo(Optional<Assemblea> assemblea, Long user) {

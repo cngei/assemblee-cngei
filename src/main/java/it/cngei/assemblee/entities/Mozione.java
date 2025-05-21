@@ -17,7 +17,7 @@ import jakarta.persistence.*;
 @AllArgsConstructor
 public class Mozione {
   @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
   private Long idAssemblea;
   private String titolo;
