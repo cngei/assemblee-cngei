@@ -5,7 +5,6 @@ import it.cngei.assemblee.repositories.AssembleeRepository;
 import it.cngei.assemblee.utils.Utils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,6 +26,9 @@ public class HomeController {
 
   @GetMapping
   public String getHome(Model model, Principal principal) {
+    if(principal == null) {
+      return "redirect:/oauth2/authorization/keycloak";
+    }
     var token = Utils.getKeycloakUserFromPrincipal(principal);
     Map<Boolean, List<Assemblea>> assemblee = assembleeRepository
         .findVisible(Long.parseLong(token.getClaim("preferred_username"))).stream()
