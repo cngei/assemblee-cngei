@@ -5,7 +5,7 @@ on:
     branches: ["master"]
 
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
@@ -13,3 +13,29 @@ jobs:
         uses: MathieuSoysal/jib-container-publish.yml@v2.1.5
         with:
           PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          tag-name: ${{ github.sha }}
+  deploy:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - name: Checkout GitOps repo
+        uses: actions/checkout@v4
+        with:
+          repository: cngei/gitops
+          token: ${{ secrets.GITOPS_PUSH_SECRET }}
+          ref: master
+          path: gitops-repo
+          fetch-depth: 0
+      - name: Update ArgoCD config and push
+        run : |
+          cd gitops-repo/assemblee
+          sed -i "s|^\([[:space:]]*image: \).*|\1ghcr.io/cngei/assemblee-cngei:${{ github.sha }}|" deployment.yaml
+          num_files_updated=$(git diff --numstat | wc -l)
+          echo "::notice::${num_files_updated} files were updated"
+          if (( num_files_updated > 0 )); then
+            git config user.name "GitHub Action"
+            git config user.email "servizi.informatici@cngei.it"
+            git add .
+            git commit -m "Action triggered: Updated assemblee to ${{ github.sha }}"
+            git push
+          fi
