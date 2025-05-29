@@ -7,6 +7,7 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions: write-all
     steps:
       - name: JIB container build and publish
         uses: MathieuSoysal/jib-container-publish.yml@v2.1.5
