@@ -237,7 +237,7 @@ public class AssembleaController {
     @CacheEvict(value = {"deleghe"}, key = "#id")
     public String covepoDelega(@PathVariable("id") Long id, @RequestParam String delegante, @RequestParam String delegato, Principal principal) {
         Long user = Utils.getUserIdFromPrincipal(principal);
-        assembleaService.checkIsAdmin(id, user);
+        assembleaService.checkIsAdminOrCovepo(id, user);
 
         if (delegheRepository.findDelegaByDeleganteAndIdAssemblea(Long.parseLong(delegante), id).isPresent()) {
             throw new IllegalStateException("Delega già presente");
