@@ -26,7 +26,7 @@
                                 class="btn btn-disabled">Non sei presente
                         </button>
                         <a th:if="${!isDelegato && !votazione.isTerminata()}"
-                           th:href="@{/assemblea/{id}/votazione/{idVotazione}/(id=${assemblea.getId()},idVotazione=${votazione.getId()})}">
+                           th:href="@{/assemblea/{id}/votazione/{idVotazione}(id=${assemblea.getId()},idVotazione=${votazione.getId()})}">
                             <button class="btn">Dettagli</button>
                         </a>
                         <a th:if="${canStop && !votazione.isAperta()}"
