@@ -86,7 +86,7 @@ public class AssembleaController {
         model.addAttribute("presentiTotali", assembleaService.getPresentiTotali(id));
         model.addAttribute("canSetPresenza", isDelegato && assemblea.isInCorso() && !presenti.contains(idUtente) && votazioni.stream().allMatch(x -> !x.isAperta() || x.isTerminata()) && !assemblea.isInPresenza());
         model.addAttribute("canRemovePresenza", isDelegato && assemblea.isInCorso() && presenti.contains(idUtente) && votazioni.stream().allMatch(x -> !x.isAperta() || x.isTerminata()) && !assemblea.isInPresenza());
-        model.addAttribute("canDelega", isDelegato && !assemblea.isNazionale() && !assemblea.isInPresenza());
+        model.addAttribute("canDelega", isDelegato && !assemblea.isNazionale());
         model.addAttribute("isDelegato", isDelegato);
         model.addAttribute("isCovepo", Utils.isCovepo(assemblea, idUtente));
         model.addAttribute("ownsDelega", delegheRepository.findDelegaByDelegatoAndIdAssemblea(idUtente, id).isPresent());
