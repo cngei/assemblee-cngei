@@ -140,7 +140,7 @@ public class AssembleaController {
     @PostMapping("/{id}/caccia/{idUtente}")
     public ResponseEntity kickPartecipante(@PathVariable("id") Long id, @PathVariable("idUtente") Long idUtente, Principal principal) {
         Long me = Utils.getUserIdFromPrincipal(principal);
-        assembleaService.checkIsAdmin(id, me);
+        assembleaService.checkIsAdminOrCovepo(id, me);
 
         var assemblea = assembleaService.getAssemblea(id);
         Optional<Delega> delega = delegheRepository.findDelegaByDelegatoAndIdAssemblea(idUtente, id);
