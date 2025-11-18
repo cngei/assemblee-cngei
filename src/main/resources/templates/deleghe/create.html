@@ -3,6 +3,9 @@
 <th:block th:include="fragments/base.html :: page">
     <div layout:fragment="content">
         <h2 class="text-xl" th:text="${assemblea.getNome()}"></h2>
+        <div th:if="${error}" class="alert alert-error my-2">
+            <p th:text="${error}"></p>
+        </div>
         <div th:if="${!delegaExists.equals('')}">
             <p>Hai delegato
                 <th:block th:text="${delegaExists}"></th:block>
@@ -15,14 +18,14 @@
             </a>
         </div>
         <form th:if="${delegaExists.equals('')}" th:object="${delega}" method="post">
-            <select class="select w-full max-w-sm input-bordered my-2" th:field="*{tessera}" required>
-                <option disabled selected th:value="null">Seleziona chi vuoi delegare</option>
+            <input class="input w-full max-w-sm input-bordered my-2" list="partecipanti-list" th:field="*{tessera}" required placeholder="Seleziona chi vuoi delegare">
+            <datalist id="partecipanti-list">
                 <option
                         th:each="partecipante : ${partecipanti}"
                         th:value="${partecipante.getKey()}"
                         th:text="${partecipante.getValue() + ' - ' + partecipante.getKey()}">
                 </option>
-            </select>
+            </datalist>
             <button class="btn btn-primary">Crea delega</button>
             <a th:href="@{/assemblea/{id}(id=${assemblea.getId()})}">
                 <button type='button' class="btn btn-outline">Annulla</button>

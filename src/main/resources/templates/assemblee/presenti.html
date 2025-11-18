@@ -3,6 +3,9 @@
 <th:block th:include="fragments/base.html :: page">
     <div layout:fragment="content">
         <div class="ml-2">
+            <div th:if="${error}" class="alert alert-error my-2">
+                <p th:text="${error}"></p>
+            </div>
             <div class="mt-4">
                 <a th:href="${'/assemblea/' + assembleaId}">
                     <button class="btn btn-outline">Torna all'assemblea</button>
@@ -38,6 +41,7 @@
                             class="input input-bordered w-full mr-1"
                             required
                             name="delegante"
+                            list="partecipanti-list"
                     ></input>
                     <input
                             type="text"
@@ -45,7 +49,15 @@
                             class="input input-bordered w-full mr-1"
                             required
                             name="delegato"
+                            list="partecipanti-list"
                     ></input>
+                    <datalist id="partecipanti-list">
+                        <option
+                                th:each="partecipante : ${partecipanti}"
+                                th:value="${partecipante.getKey()}"
+                                th:text="${partecipante.getValue() + ' - ' + partecipante.getKey()}">
+                        </option>
+                    </datalist>
                     <button type="submit" class="btn btn-primary">Aggiungi</button>
                 </div>
             </form>

@@ -124,9 +124,11 @@ public class AssembleaService {
     public void addDelegato(Long id, Long tessera) {
         Assemblea assemblea = assembleeRepository.getById(id);
         List<Long> delegati = new ArrayList<>(Arrays.asList(assemblea.getPartecipanti()));
-        delegati.add(tessera);
-        assemblea.setPartecipanti(delegati.toArray(Long[]::new));
-        assembleeRepository.save(assemblea);
+        if (!delegati.contains(tessera)) {
+            delegati.add(tessera);
+            assemblea.setPartecipanti(delegati.toArray(Long[]::new));
+            assembleeRepository.save(assemblea);
+        }
     }
 
     @CacheEvict(value = {"partecipanti", "presentiTotali"}, key = "#id")

@@ -13,11 +13,11 @@ import it.cngei.assemblee.state.AssembleaState;
 import it.cngei.assemblee.state.VotazioneState;
 import it.cngei.assemblee.utils.Utils;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
@@ -234,30 +234,16 @@ public class AssembleaController {
     }
 
     @PostMapping("/{id}/covepoDelega")
-    @CacheEvict(value = {"deleghe"}, key = "#id")
-    public String covepoDelega(@PathVariable("id") Long id, @RequestParam String delegante, @RequestParam String delegato, Principal principal) {
+    public String covepoDelega(@PathVariable("id") Long id, @RequestParam String delegante, @RequestParam String delegato, Principal principal, RedirectAttributes redirectAttributes) {
         Long user = Utils.getUserIdFromPrincipal(principal);
         assembleaService.checkIsAdminOrCovepo(id, user);
 
-        if (delegheRepository.findDelegaByDeleganteAndIdAssemblea(Long.parseLong(delegante), id).isPresent()) {
-            throw new IllegalStateException("Delega già presente");
+        try {
+            delegheService.createDelega(id, Long.parseLong(delegante), Long.parseLong(delegato));
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/assemblea/" + id + "/presenti";
         }
-
-        var newDelega = Delega.builder()
-                .idAssemblea(id)
-                .delegante(Long.parseLong(delegante))
-                .delegato(Long.parseLong(delegato))
-                .build();
-
-        // Se la persona che delego e' presente, divento presente per delega
-        if (assembleaState.getPresenti(id).contains(Long.parseLong(delegato))) {
-            assembleaState.setPresente(id, Long.parseLong(delegante), false);
-        } else {
-            // Altrimenti saro' assente
-            assembleaState.setAssente(id, Long.parseLong(delegante), false);
-        }
-        delegheRepository.save(newDelega);
-
         return "redirect:/assemblea/" + id + "/presenti";
     }
 
