@@ -214,7 +214,7 @@ public class AssembleaController {
     @PostMapping("/{id}/aggiungiPartecipante")
     public String aggiungiPartecipante(@PathVariable("id") Long id, @RequestParam String tessera, Principal principal) {
         Long user = Utils.getUserIdFromPrincipal(principal);
-        assembleaService.checkIsAdmin(id, user);
+        assembleaService.checkIsAdminOrCovepo(id, user);
         assembleaService.addDelegato(id, Long.parseLong(tessera));
         return "redirect:/assemblea/" + id + "/presenti";
     }
@@ -240,6 +240,20 @@ public class AssembleaController {
 
         try {
             delegheService.createDelega(id, Long.parseLong(delegante), Long.parseLong(delegato));
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/assemblea/" + id + "/presenti";
+        }
+        return "redirect:/assemblea/" + id + "/presenti";
+    }
+
+    @PostMapping("/{id}/annullaDelega/{delegante}")
+    public String annullaDelega(@PathVariable("id") Long id, @PathVariable Long delegante, Principal principal, RedirectAttributes redirectAttributes) {
+        Long user = Utils.getUserIdFromPrincipal(principal);
+        assembleaService.checkIsAdminOrCovepo(id, user);
+
+        try {
+            delegheService.deleteDelega(id, delegante);
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/assemblea/" + id + "/presenti";

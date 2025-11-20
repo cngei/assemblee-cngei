@@ -70,6 +70,13 @@
                         <th:block th:if="${deleghe.containsKey(partecipante.getKey())}">
                             <span>Ha delegato <th:block
                                     th:text="${deleghe.get(partecipante.getKey())}"></th:block></span>
+                            <form th:if="${isCovepo}"
+                                  th:action="@{/assemblea/{id}/annullaDelega/{delegante}(id=${assembleaId}, delegante=${partecipante.getKey()})}"
+                                  method="post"
+                                  style="display: inline;"
+                                  onsubmit="return window.confirm('Vuoi annullare questa delega? Il delegante sarà segnato come assente.');">
+                                <button type="submit" class="btn btn-outline btn-warning btn-sm mb-1 ml-2">Annulla delega</button>
+                            </form>
                         </th:block>
                     </td>
                     <td>
