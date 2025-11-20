@@ -222,7 +222,7 @@ public class AssembleaController {
     @GetMapping("/{id}/rimuoviPartecipante/{tessera}")
     public String rimuoviPartecipante(@PathVariable("id") Long id, @PathVariable Long tessera, Principal principal) {
         Long user = Utils.getUserIdFromPrincipal(principal);
-        assembleaService.checkIsAdmin(id, user);
+        assembleaService.checkIsAdminOrCovepo(id, user);
         assembleaState.setAssente(id, tessera, false);
         Optional<Delega> delegaByDelegatoAndIdAssemblea = delegheRepository.findDelegaByDelegatoAndIdAssemblea(tessera, id);
         delegaByDelegatoAndIdAssemblea.ifPresent(x -> {
