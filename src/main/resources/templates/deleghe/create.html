@@ -10,7 +10,7 @@
             <p>Hai delegato
                 <th:block th:text="${delegaExists}"></th:block>
             </p>
-            <a th:href="@{/assemblea/{id}/delega/annulla(id=${assemblea.getId()})}">
+            <a th:if="${!assemblea.isNazionale()}" th:href="@{/assemblea/{id}/delega/annulla(id=${assemblea.getId()})}">
                 <button class="btn btn-error">Elimina delega</button>
             </a>
             <a th:href="@{/assemblea/{id}(id=${assemblea.getId()})}">
