@@ -4,6 +4,11 @@
     <div layout:fragment="content">
         <h2 class="text-xl">Nuova votazione</h2>
         <form th:object="${votazioneModel}" method="post">
+            <div class="alert alert-error my-4" th:if="${#fields.hasAnyErrors()}" role="alert">
+                <ul>
+                    <li th:each="errore : ${#fields.allErrors()}" th:text="${errore}"></li>
+                </ul>
+            </div>
             <div class="form-control w-full max-w-md">
                 <label class="label">
                     <span class="label-text">Quesito in votazione</span>
@@ -31,6 +36,8 @@
                 </label>
                 <input
                         type="number"
+                        min="1"
+                        step="1"
                         class="input input-bordered w-full"
                         required
                         th:field="*{numeroScelte}"

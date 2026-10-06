@@ -16,6 +16,7 @@ import it.cngei.assemblee.utils.Utils;
 import lombok.Data;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -57,9 +58,17 @@ public class VotazioniController {
   }
 
   @PostMapping("/crea")
-  public String createVotazione(VotazioneEditModel votazioneModel, @PathVariable("id") Long id, Principal principal) {
+  public String createVotazione(@ModelAttribute("votazioneModel") VotazioneEditModel votazioneModel,
+      BindingResult bindingResult, @PathVariable("id") Long id, Principal principal, Model model) {
     var idUtente = Utils.getUserIdFromPrincipal(principal);
     assembleaService.checkIsAdmin(id, idUtente);
+    if (votazioneModel.getNumeroScelte() == null || votazioneModel.getNumeroScelte() < 1) {
+      bindingResult.rejectValue("numeroScelte", "votazione.numeroScelte", "Il numero massimo di scelte deve essere almeno 1.");
+    }
+    if (bindingResult.hasErrors()) {
+      model.addAttribute("assemblea", assembleaService.getAssemblea(id));
+      return "votazioni/create";
+    }
     var scelte = Arrays.stream(votazioneModel.getScelte().split("\n")).map(String::trim).filter(x -> !x.isBlank()).collect(Collectors.toList());
     scelte.add("Astenuto");
     var newVotazione = Votazione.builder()

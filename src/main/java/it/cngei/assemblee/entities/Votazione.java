@@ -48,4 +48,9 @@ public class Votazione {
   @Column(name = "scelte", columnDefinition = "varchar[]")
   @JdbcTypeCode(SqlTypes.ARRAY)
   private String[] scelte;
+
+  public long getNumeroScelteEffettivo() {
+    // Le votazioni già create con un limite non valido vengono trattate come scelta singola.
+    return numeroScelte == null || numeroScelte < 1 ? 1 : numeroScelte;
+  }
 }

@@ -1,7 +1,9 @@
 package it.cngei.assemblee.controllers;
 
 import it.cngei.assemblee.dtos.VotoEditModel;
+import it.cngei.assemblee.entities.Assemblea;
 import it.cngei.assemblee.entities.Delega;
+import it.cngei.assemblee.entities.Votazione;
 import it.cngei.assemblee.entities.Voto;
 import it.cngei.assemblee.enums.TipoVotazione;
 import it.cngei.assemblee.repositories.AssembleeRepository;
@@ -15,6 +17,7 @@ import lombok.SneakyThrows;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -58,6 +61,13 @@ public class VotiController {
     var assemblea = assembleeRepository.findById(id);
     var votazione = votazioneRepository.findById(idVotazione);
 
+    if (assemblea.isEmpty()) {
+      throw new NoSuchElementException();
+    }
+    if (votazione.isEmpty()) {
+      return "redirect:/assemblea/" + id;
+    }
+
     if(!assembleaState.getPresenti(id).contains(me)) {
       model.addAllAttributes(Map.of(
           "assemblea", assemblea.get(),
@@ -74,22 +84,7 @@ public class VotiController {
     votoModel.setIdProprio(idProprio);
     votoModel.setIdDelega(idDelega);
 
-    if (assemblea.isEmpty()) {
-      throw new NoSuchElementException();
-    } else if (votazione.isEmpty()) {
-      return "redirect:/assemblee/" + id;
-    } else {
-      model.addAllAttributes(Map.of(
-          "assemblea", assemblea.get(),
-          "votazione", votazione.get(),
-          "hasDelega", delega.isPresent(),
-          "isPalese", votazione.get().getTipoVotazione() == TipoVotazione.PALESE,
-          "idProprio", idProprio,
-          "idDelega", delega.isPresent() ? idDelega : -1L,
-          "votoModel", votoModel
-      ));
-      return "votazioni/view";
-    }
+    return renderVoto(model, assemblea.get(), votazione.get(), delega.isPresent(), votoModel);
   }
 
   @SneakyThrows
@@ -97,12 +92,20 @@ public class VotiController {
   public String handleVoto(
       @PathVariable("id") Long id,
       @PathVariable("idVotazione") Long idVotazione,
-      VotoEditModel votoModel,
-      Principal principal
+      @ModelAttribute("votoModel") VotoEditModel votoModel,
+      BindingResult bindingResult,
+      Principal principal,
+      Model model
   ) {
     var me = Long.valueOf(Utils.getKeycloakUserFromPrincipal(principal).getClaim("preferred_username"));
     var assemblea = assembleeRepository.findById(id);
     var votazione = votazioneRepository.findById(idVotazione);
+    if (assemblea.isEmpty()) {
+      return "redirect:/";
+    }
+    if (votazione.isEmpty()) {
+      return "redirect:/assemblea/" + id;
+    }
     var delega = delegheRepository.findDelegaByDelegatoAndIdAssemblea(me, id);
 
     if(!assembleaState.getPresenti(id).contains(me)) {
@@ -119,49 +122,82 @@ public class VotiController {
       throw new AccessDeniedException("Votazione conclusa");
     }
 
-    if (assemblea.isEmpty()) {
-      return "redirect:/";
-    } else if (votazione.isEmpty()) {
-      return "redirect:/assemblee/" + id;
-    } else {
-      var inProprio = Voto.builder()
-          .id(votoModel.getIdProprio())
-          .idVotazione(idVotazione)
-          .scelte(parseScelte(votoModel.getInProprio(), votazione.get().getScelte(), votazione.get().getNumeroScelte()))
-          .build();
-      votiRepository.save(inProprio);
-      votazioneState.setVotante(idVotazione, me);
+    Long[] scelteInProprio = null;
+    Long[] sceltePerDelega = null;
+    try {
+      scelteInProprio = parseScelte(votoModel.getInProprio(), votazione.get().getScelte(), votazione.get().getNumeroScelteEffettivo());
+    } catch (IllegalArgumentException e) {
+      bindingResult.rejectValue("inProprio", "voto.scelte", "Voto in proprio: " + e.getMessage());
+    }
+    if (delega.isPresent()) {
+      try {
+        sceltePerDelega = parseScelte(votoModel.getPerDelega(), votazione.get().getScelte(), votazione.get().getNumeroScelteEffettivo());
+      } catch (IllegalArgumentException e) {
+        bindingResult.rejectValue("perDelega", "voto.scelte", "Voto per delega: " + e.getMessage());
+      }
+    }
+    if (bindingResult.hasErrors()) {
+      return renderVoto(model, assemblea.get(), votazione.get(), delega.isPresent(), votoModel);
+    }
 
-      if (delega.isPresent()) {
-        var perDelega = Voto.builder()
-            .id(votoModel.getIdDelega())
-            .idVotazione(idVotazione)
-            .scelte(parseScelte(votoModel.getPerDelega(), votazione.get().getScelte(), votazione.get().getNumeroScelte()))
-            .perDelega(true)
-            .build();
-        votiRepository.save(perDelega);
-        votazioneState.setVotante(idVotazione, delega.get().getDelegante());
-      }
-      if(votazione.get().getTipoVotazione() == TipoVotazione.PALESE) {
-        return "redirect:/assemblea/" + id + "/votazione/" + idVotazione + "/risultati";
-      } else {
-        return "redirect:/assemblea/" + id;
-      }
+    var inProprio = Voto.builder()
+        .id(votoModel.getIdProprio())
+        .idVotazione(idVotazione)
+        .scelte(scelteInProprio)
+        .build();
+    votiRepository.save(inProprio);
+    votazioneState.setVotante(idVotazione, me);
+
+    if (delega.isPresent()) {
+      var perDelega = Voto.builder()
+          .id(votoModel.getIdDelega())
+          .idVotazione(idVotazione)
+          .scelte(sceltePerDelega)
+          .perDelega(true)
+          .build();
+      votiRepository.save(perDelega);
+      votazioneState.setVotante(idVotazione, delega.get().getDelegante());
+    }
+    if(votazione.get().getTipoVotazione() == TipoVotazione.PALESE) {
+      return "redirect:/assemblea/" + id + "/votazione/" + idVotazione + "/risultati";
+    } else {
+      return "redirect:/assemblea/" + id;
     }
   }
 
-  private Long[] parseScelte(List<String> scelte, String[] opzioni, Long maxScelte) {
-    if(scelte == null || scelte.isEmpty()) {
+  private String renderVoto(Model model, Assemblea assemblea, Votazione votazione, boolean hasDelega, VotoEditModel votoModel) {
+    model.addAllAttributes(Map.of(
+        "assemblea", assemblea,
+        "votazione", votazione,
+        "hasDelega", hasDelega,
+        "isPalese", votazione.getTipoVotazione() == TipoVotazione.PALESE,
+        "votoModel", votoModel
+    ));
+    model.addAttribute("idProprio", votoModel.getIdProprio());
+    model.addAttribute("idDelega", hasDelega ? votoModel.getIdDelega() : -1L);
+    return "votazioni/view";
+  }
+
+  private Long[] parseScelte(List<String> scelte, String[] opzioni, long maxScelte) {
+    var selezionate = scelte == null ? List.<String>of() : scelte.stream().filter(Objects::nonNull).toList();
+    if (selezionate.isEmpty()) {
       return new Long[]{(long) (opzioni.length - 1)};
     }
+    if (selezionate.size() > maxScelte) {
+      throw new IllegalArgumentException("Puoi selezionare al massimo " + maxScelte + (maxScelte == 1 ? " opzione." : " opzioni."));
+    }
 
-    var opzioniStream = Arrays.stream(opzioni).toList();
-    return scelte.stream()
-        .filter(Objects::nonNull)
-        .map(opzioniStream::indexOf)
-        .filter(x -> x >= 0)
-        .limit(maxScelte)
-        .map(Long::valueOf)
-        .toArray(Long[]::new);
+    var opzioniDisponibili = Arrays.asList(opzioni);
+    Set<Long> indici = new LinkedHashSet<>();
+    for (var scelta : selezionate) {
+      var indice = opzioniDisponibili.indexOf(scelta);
+      if (indice < 0) {
+        throw new IllegalArgumentException("Una delle opzioni selezionate non è valida.");
+      }
+      if (!indici.add((long) indice)) {
+        throw new IllegalArgumentException("Ogni opzione può essere selezionata una sola volta.");
+      }
+    }
+    return indici.toArray(Long[]::new);
   }
 }
